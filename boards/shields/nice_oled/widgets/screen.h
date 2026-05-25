@@ -11,6 +11,7 @@ struct zmk_widget_screen {
     lv_obj_t *obj;
     lv_color_t cbuf[CANVAS_HEIGHT * CANVAS_HEIGHT];
     struct status_state state;
+    struct nice_oled_compositor compositor;
 };
 
 // TODO: batt
