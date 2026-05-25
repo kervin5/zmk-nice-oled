@@ -1,5 +1,6 @@
 /* boards/shields/nice_oled/display/render/screen_common.h */
-#pragma once
+#ifndef SCREEN_COMMON_H
+#define SCREEN_COMMON_H
 
 #include <zephyr/kernel.h>
 #include <lvgl.h>
@@ -23,3 +24,5 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp);
 /* Peripheral compositor entry points */
 int nice_oled_screen_peripheral_init(struct nice_oled_compositor *comp, lv_obj_t *parent);
 void nice_oled_screen_peripheral_redraw(struct nice_oled_compositor *comp);
+
+#endif /* SCREEN_COMMON_H */
