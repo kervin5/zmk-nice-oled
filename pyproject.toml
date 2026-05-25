@@ -1,0 +1,27 @@
+[project]
+name = "zmk-nice-oled-dev"
+version = "0.1.0"
+description = "Development tooling metadata for the zmk-nice-oled repository."
+requires-python = ">=3.12"
+
+[dependency-groups]
+build = [
+    "anytree",
+    "canopen",
+    "intelhex",
+    "packaging",
+    "progress",
+    "psutil",
+    "pyelftools>=0.27",
+    "pykwalify",
+    "pylink-square",
+    "pyserial",
+    "pyyaml>=5.1",
+    "requests",
+    "west>=0.14.0",
+    "windows-curses; sys_platform == 'win32'",
+]
+
+[tool.uv]
+package = false
+default-groups = ["build"]

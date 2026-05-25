@@ -11,7 +11,7 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 ## Current Focus
 
-- `[ ]` Phase 1 planning review
+- `[ ]` Phase 1 model extraction
 
 ## Phases
 
@@ -19,11 +19,11 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 - `[ ]` Document supported feature combinations
 - `[ ]` Capture current visual/reference behavior for key shield/layout combinations
-- `[ ]` Define migration support matrix
+- `[~]` Define migration support matrix
 
 ### Phase 1: Structural Containment
 
-- `[ ]` Add build fixtures and CI matrix
+- `[x]` Add build fixtures and CI matrix
 - `[ ]` Extract central/peripheral/raw HID model types
 - `[ ]` Add dirty-domain flags
 - `[ ]` Define widget/layout/theme boundaries in code
@@ -118,3 +118,8 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 - Architecture-first migration approved.
 - Spec, implementation plan, and tracker created.
+- Task 1 started with a real fixture strategy instead of documentation-only placeholders.
+- The verification scaffold now includes a minimal Corne keymap and a CI path that builds the checked-out module via `ZMK_EXTRA_MODULES`.
+- Static verification passed for the new fixture paths and workflow references.
+- Local smoke build now passes for `corne_left nice_oled` using a repo-local `uv`-managed `.venv`, `west`, Homebrew `cmake`/`ninja`, and `GNUARMEMB_TOOLCHAIN_PATH=/opt/homebrew`.
+- Python-side build dependencies are now tracked in `pyproject.toml` and `uv.lock` instead of being installed out-of-band.

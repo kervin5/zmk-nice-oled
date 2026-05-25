@@ -1,0 +1,71 @@
+name: build-matrix
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: nice_oled
+            shield: "corne_left nice_oled"
+            extra_conf_files: "base.conf nice_oled.conf"
+          - target: nice_epaper
+            shield: "corne_left nice_view_adapter nice_epaper"
+            extra_conf_files: "base.conf nice_epaper.conf"
+          - target: nice_custom
+            shield: "corne_left nice_view_adapter nice_custom"
+            extra_conf_files: "base.conf nice_custom.conf"
+          - target: nice_oled_raw_hid
+            shield: "corne_left nice_oled"
+            extra_conf_files: "base.conf nice_oled.conf raw_hid.conf"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install west
+        run: python -m pip install west
+
+      - name: Clone ZMK
+        run: |
+          mkdir -p "$RUNNER_TEMP/zmk-workspace"
+          git clone --depth 1 --branch v0.3.0 \
+            https://github.com/zmkfirmware/zmk.git \
+            "$RUNNER_TEMP/zmk-workspace/zmk"
+
+      - name: Bootstrap west workspace
+        working-directory: ${{ runner.temp }}/zmk-workspace
+        run: |
+          west init -l zmk/app
+          cd zmk
+          west update
+          west zephyr-export
+          python -m pip install -r zephyr/scripts/requirements-base.txt
+
+      - name: Build fixture
+        working-directory: ${{ runner.temp }}/zmk-workspace/zmk
+        run: |
+          EXTRA_CONF=""
+          for file in ${{ matrix.extra_conf_files }}; do
+            if [ -n "$EXTRA_CONF" ]; then
+              EXTRA_CONF="${EXTRA_CONF};"
+            fi
+            EXTRA_CONF="${EXTRA_CONF}$GITHUB_WORKSPACE/tests/fixtures/zmk-config/config/$file"
+          done
+
+          west build -s app -d "build/${{ matrix.target }}" -b nice_nano_v2 -- \
+            -DSHIELD="${{ matrix.shield }}" \
+            -DZMK_CONFIG="$GITHUB_WORKSPACE/tests/fixtures/zmk-config/config" \
+            -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE" \
+            -DEXTRA_CONF_FILE="$EXTRA_CONF"

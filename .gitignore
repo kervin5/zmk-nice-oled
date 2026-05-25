@@ -86,6 +86,7 @@ node_modules
 *.pyc
 .idea/
 /.idea
+.venv/
 # build/
 __pycache__
 

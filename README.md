@@ -10,6 +10,7 @@
 - [Overview](#overview)
 - [Gallery](#gallery)
 - [Quick Installation](#quick-installation)
+- [Development Verification](#development-verification)
 - [Configuration](#configuration)
 - [ZMK RAW HID Implementation](#zmk-raw-hid-implementation)
 - [Suggestions](#suggestions)
@@ -161,6 +162,66 @@ include:
 ```
 
 4. Build the firmware, flash it to your keyboard, and enjoy!
+
+# Development Verification
+
+The repository now includes a minimal build fixture under
+`tests/fixtures/zmk-config` plus a GitHub Actions matrix in
+`.github/workflows/build-matrix.yml`.
+
+The fixture is intentionally small: it uses a `corne` keymap to smoke-test the
+module across the most important display variants without requiring a separate
+user config repository.
+
+The current matrix covers:
+
+- `nice_oled`
+- `nice_epaper`
+- `nice_custom`
+- `nice_oled` with `CONFIG_NICE_OLED_WIDGET_RAW_HID=y`
+
+For a local developer setup in this repo, create a project-scoped virtual
+environment with `uv`, then sync the tracked build tooling from
+`pyproject.toml` and `uv.lock`:
+
+```sh
+uv venv .venv
+source .venv/bin/activate
+uv sync
+```
+
+The tracked Python tool dependencies mirror Zephyr's base build requirements
+plus `west`, so the local developer environment is reproducible from the repo
+instead of relying on ad hoc install commands.
+
+When using the Homebrew ARM embedded toolchain, export the Zephyr toolchain
+variables before building:
+
+```sh
+export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+export GNUARMEMB_TOOLCHAIN_PATH=/opt/homebrew
+```
+
+For a local smoke build from the root of an initialized ZMK workspace, point
+the build to this module checkout explicitly:
+
+```sh
+MODULE_ROOT="/absolute/path/to/zmk-nice-oled"
+
+west build -s app -d build/nice_oled -b nice_nano_v2 -- \
+  -DSHIELD="corne_left nice_oled" \
+  -DZMK_CONFIG="$MODULE_ROOT/tests/fixtures/zmk-config/config" \
+  -DZMK_EXTRA_MODULES="$MODULE_ROOT" \
+  -DEXTRA_CONF_FILE="$MODULE_ROOT/tests/fixtures/zmk-config/config/base.conf;$MODULE_ROOT/tests/fixtures/zmk-config/config/nice_oled.conf"
+```
+
+That local smoke path assumes the normal ZMK toolchain is installed and
+available in `PATH`, including `west`, `cmake`, `ninja`, and the ARM embedded
+toolchain binaries.
+
+The fixture `west.yml` remains useful as a reference manifest for a standalone
+`zmk-config` repository, while CI builds the current checkout directly via
+`ZMK_EXTRA_MODULES` so pull requests validate the code under review.
 
 # Configuration
 > [!IMPORTANT]

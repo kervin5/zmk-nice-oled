@@ -19,6 +19,8 @@
 - Create: `tests/fixtures/zmk-config/config/nice_oled.conf`
 - Create: `tests/fixtures/zmk-config/config/nice_epaper.conf`
 - Create: `tests/fixtures/zmk-config/config/nice_custom.conf`
+- Create: `tests/fixtures/zmk-config/config/raw_hid.conf`
+- Create: `tests/fixtures/zmk-config/config/corne.keymap`
 - Create: `.github/workflows/build-matrix.yml`
 - Modify: `README.md`
 
@@ -64,13 +66,30 @@ include:
     shield: corne_left nice_oled
 ```
 
+```dts
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+    };
+};
+```
+
 - [ ] **Step 4: Wire the GitHub Actions workflow to build the matrix**
 
 ```yaml
 - name: Build fixture
+  working-directory: ${{ runner.temp }}/zmk-workspace
   run: |
-    west build -s zmk/app -d build/${{ matrix.target }} -b nice_nano_v2 -- \
-      -DZMK_CONFIG="$GITHUB_WORKSPACE/tests/fixtures/zmk-config/config"
+    mkdir -p "$RUNNER_TEMP/zmk-workspace"
+    git clone --depth 1 --branch v0.3.0 \
+      https://github.com/zmkfirmware/zmk.git \
+      "$RUNNER_TEMP/zmk-workspace/zmk"
+    west init -l zmk/app
+    cd zmk
+    west update
+    west build -s app -d build/${{ matrix.target }} -b nice_nano_v2 -- \
+      -DZMK_CONFIG="$GITHUB_WORKSPACE/tests/fixtures/zmk-config/config" \
+      -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE"
 ```
 
 - [ ] **Step 5: Run static verification locally**
