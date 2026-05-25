@@ -1,5 +1,4 @@
 /* boards/shields/nice_oled/display/render/screen_peripheral_render.c */
-#pragma once
 
 #include <zephyr/kernel.h>
 #include <lvgl.h>

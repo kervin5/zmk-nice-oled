@@ -1,5 +1,4 @@
 /* boards/shields/nice_oled/display/render/screen_central.c */
-#pragma once
 
 #include <zephyr/kernel.h>
 #include <lvgl.h>
@@ -17,7 +16,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../../widgets/profile.h"
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID)
-#include <lvgl.h>
 #include <raw_hid/hid.h>
 #endif
 
