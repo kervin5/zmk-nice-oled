@@ -62,14 +62,14 @@ void draw_output_status(lv_obj_t *canvas, const struct status_state *state) {
 #endif // CONFIG_NICE_EPAPER_ON
 
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    switch (state->selected_endpoint.transport) {
+    switch (state->central.selected_endpoint.transport) {
     case ZMK_TRANSPORT_USB:
         draw_usb_connected(canvas);
         break;
 
     case ZMK_TRANSPORT_BLE:
-        if (state->active_profile_bonded) {
-            if (state->active_profile_connected) {
+        if (state->central.active_profile_bonded) {
+            if (state->central.active_profile_connected) {
                 draw_ble_connected(canvas);
             } else {
                 draw_ble_disconnected(canvas);
@@ -80,7 +80,7 @@ void draw_output_status(lv_obj_t *canvas, const struct status_state *state) {
         break;
     }
 #else
-    if (state->connected) {
+    if (state->peripheral.connected) {
         draw_ble_connected(canvas);
     } else {
         draw_ble_disconnected(canvas);
