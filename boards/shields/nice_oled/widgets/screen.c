@@ -138,7 +138,6 @@ static void set_mods_status(struct zmk_widget_screen *widget,
     }
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 #endif
 }
@@ -192,7 +191,6 @@ static void weather_status_update_cb(struct weather_notification weather) {
         }
 
         widget->state.dirty |= dirty;
-        nice_oled_status_state_sync_from_central(&widget->state);
         nice_oled_screen_central_redraw(&widget->compositor);
     }
 }
@@ -224,7 +222,6 @@ static void spotify_status_update_cb(struct spotify_notification spotify) {
         }
 
         widget->state.dirty |= dirty;
-        nice_oled_status_state_sync_from_central(&widget->state);
         nice_oled_screen_central_redraw(&widget->compositor);
     }
 }
@@ -277,7 +274,6 @@ static void set_battery_status(struct zmk_widget_screen *widget,
     }
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -321,7 +317,6 @@ static void set_battery_status(struct zmk_widget_screen *widget, struct battery_
     }
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -395,7 +390,6 @@ static void set_layer_status(struct zmk_widget_screen *widget, struct layer_stat
     }
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -430,7 +424,6 @@ static void set_output_status(struct zmk_widget_screen *widget,
     }
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -469,7 +462,6 @@ static void set_wpm_status(struct zmk_widget_screen *widget, struct wpm_status_s
         nice_oled_central_apply_wpm(&widget->state.central, state.wpm);
 
     widget->state.dirty |= dirty;
-    nice_oled_status_state_sync_from_central(&widget->state);
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
