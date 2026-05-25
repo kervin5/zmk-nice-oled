@@ -12,10 +12,10 @@ void draw_layer_status(lv_obj_t *canvas, const struct status_state *state) {
 
     char text[10] = {};
 
-    if (state->layer_label == NULL) {
-        sprintf(text, "Layer %i", state->layer_index);
+    if (state->central.layer_label == NULL) {
+        sprintf(text, "Layer %i", state->central.layer_index);
     } else {
-        strncpy(text, state->layer_label, 9);
+        strncpy(text, state->central.layer_label, 9);
         to_uppercase(text);
     }
 
