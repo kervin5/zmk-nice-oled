@@ -1,4 +1,6 @@
 /* boards/shields/nice_oled/display/render/screen_central.c */
+#pragma once
+
 #include <zephyr/kernel.h>
 #include <lvgl.h>
 #include <zephyr/logging/log.h>
@@ -14,7 +16,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../../widgets/wpm.h"
 #include "../../widgets/profile.h"
 
-/* Forward declarations — draw helpers that will be moved from screen.c */
+/* Forward declarations — draw helpers that will be moved from screen.c in Task 4 */
 static void draw_background(lv_obj_t *canvas, const struct status_state *state);
 static void draw_output_status(lv_obj_t *canvas, const struct status_state *state);
 static void draw_battery_text_central(lv_obj_t *canvas, const struct status_state *state);
@@ -44,8 +46,8 @@ int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *p
     comp->dirty = NICE_OLED_DIRTY_NONE;
     comp->initialized = false;
 
-    int canvas_width = 64;
-    int canvas_height = 64;
+    int canvas_width = CONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH;
+    int canvas_height = CONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT;
     lv_color_t *buf = lv_mem_alloc(canvas_width * canvas_height * sizeof(lv_color_t));
     if (!buf) return -1;
     comp->cbuf = lv_img_buf_alloc(canvas_width, canvas_height, LV_IMG_CF_TRUE_COLOR, buf);
@@ -72,7 +74,7 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
     draw_canvas_central(comp->canvas, comp->state);
 }
 
-/* Stub implementations — to be replaced with real code from screen.c */
+/* Stub implementations — to be replaced with real code from screen.c in Task 4 */
 static void draw_background(lv_obj_t *canvas, const struct status_state *state) {}
 static void draw_output_status(lv_obj_t *canvas, const struct status_state *state) {}
 static void draw_battery_text_central(lv_obj_t *canvas, const struct status_state *state) {}
