@@ -74,6 +74,7 @@ Session.vim
 test.*
 tmp.*
 temp.*
+tmp/
 
 # Java
 *.class
