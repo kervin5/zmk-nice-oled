@@ -40,27 +40,11 @@ static struct zmk_widget_luna luna_widget;
 #endif
 
 /**
- * Draw canvas
- **/
-
-static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status_state *state) {
-    lv_obj_t *canvas = lv_obj_get_child(widget, 0);
-
-    // Draw widgets
-    draw_background(canvas);
-    draw_output_status(canvas, state);
-    draw_battery_status(canvas, state);
-
-    // Rotate for horizontal display
-    rotate_canvas(canvas, cbuf);
-}
-
-/**
  * Battery status
  **/
 
 static void set_battery_status(struct zmk_widget_screen *widget,
-                               struct battery_status_state state) {
+                                struct battery_status_state state) {
     const nice_oled_dirty_mask_t dirty = nice_oled_peripheral_apply_battery_state(
         &widget->state.peripheral, state.level,
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
@@ -76,7 +60,8 @@ static void set_battery_status(struct zmk_widget_screen *widget,
 
     widget->state.dirty |= dirty;
     nice_oled_status_state_sync_from_peripheral(&widget->state);
-    draw_canvas(widget->obj, widget->cbuf, &widget->state);
+    widget->compositor.state = &widget->state;
+    nice_oled_screen_peripheral_redraw(&widget->compositor);
 
     // draw_animation(widget->obj, widget);
 
@@ -137,7 +122,8 @@ static void set_connection_status(struct zmk_widget_screen *widget,
 
     widget->state.dirty |= dirty;
     nice_oled_status_state_sync_from_peripheral(&widget->state);
-    draw_canvas(widget->obj, widget->cbuf, &widget->state);
+    widget->compositor.state = &widget->state;
+    nice_oled_screen_peripheral_redraw(&widget->compositor);
 }
 
 static void output_status_update_cb(struct peripheral_status_state state) {
@@ -158,9 +144,10 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
     nice_oled_status_state_init(&widget->state);
 
-    lv_obj_t *canvas = lv_canvas_create(widget->obj);
-    lv_obj_align(canvas, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_canvas_set_buffer(canvas, widget->cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+    if (nice_oled_screen_peripheral_init(&widget->compositor, widget->obj) != 0) {
+        return -1;
+    }
+    lv_obj_t *canvas = widget->compositor.canvas;
 
     sys_slist_append(&widgets, &widget->node);
 

@@ -60,6 +60,10 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
 
     if(NOT CONFIG_ZMK_SPLIT OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
+      zephyr_library_include_directories(display/render)
+
+      zephyr_library_sources(display/render/screen_central.c)
+
       if(CONFIG_NICE_OLED_WIDGET_WPM)
         zephyr_library_sources(widgets/wpm.c)
         target_sources_ifdef(CONFIG_NICE_OLED_WIDGET_WPM_LUNA app PRIVATE widgets/luna.c)
@@ -88,6 +92,10 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
       zephyr_library_sources(widgets/profile.c)
       zephyr_library_sources(widgets/screen.c)
     else()
+
+      zephyr_library_include_directories(display/render)
+
+      zephyr_library_sources(display/render/screen_peripheral_render.c)
 
       if(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_WPM)
         target_sources_ifdef(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_WPM app PRIVATE widgets/luna.c)

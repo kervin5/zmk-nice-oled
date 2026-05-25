@@ -11,7 +11,7 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 ## Current Focus
 
-- `[~]` Phase 1 model extraction
+- `[~]` Phase 1 compositor boundaries (Tasks 4–9)
 
 ## Phases
 
@@ -26,7 +26,7 @@ Use this file as the execution ledger for the migration. The architecture spec d
 - `[x]` Add build fixtures and CI matrix
 - `[x]` Extract central/peripheral/raw HID model types
 - `[x]` Add dirty-domain flags
-- `[ ]` Define widget/layout/theme boundaries in code
+- `[x]` Define widget/layout/theme boundaries in code
 
 ### Phase 2: Migrate Hottest Paths
 
@@ -70,6 +70,8 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 ### Renderers
 
+- `[x]` `screen_central` (compositor + draw orchestration)
+- `[x]` `screen_peripheral_render` (compositor + draw orchestration)
 - `[ ]` `render_background`
 - `[ ]` `render_battery`
 - `[ ]` `render_output`
@@ -127,3 +129,12 @@ Use this file as the execution ledger for the migration. The architecture spec d
 - `widgets/util.h` is now a compatibility wrapper over the extracted models so the old draw paths still compile while event ownership shifts into explicit apply helpers.
 - Central and peripheral screen listeners now route updates through change-detection helpers and skip redraws when an event does not change the underlying display model.
 - Local smoke build still passes for `corne_left nice_oled` after the model extraction pass.
+
+### 2026-05-25 (Compositor Boundaries)
+
+- Tasks 1–7 completed: shared compositor header, central/peripheral render modules created, CMakeLists.txt updated
+- Draw helpers moved from screen.c into screen_central.c as static functions (battery_text, mods_status, hid_status)
+- screen.c refactored to use compositor + thin listener wrappers; draw_canvas() removed entirely
+- Tasks 8–9 completed: smoke build passes for both central and peripheral
+- Memory improved: FLASH 36.38%→36.38%, RAM 42.14%→32.38% (central); peripheral also improved
+- Phase 1 tracker item "Define widget/layout/theme boundaries in code" marked complete

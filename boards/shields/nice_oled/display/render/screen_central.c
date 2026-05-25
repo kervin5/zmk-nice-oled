@@ -54,22 +54,10 @@ int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *p
     comp->dirty = NICE_OLED_DIRTY_NONE;
     comp->initialized = false;
 
-    int canvas_width = CONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH;
-    int canvas_height = CONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT;
-    lv_color_t *buf = lv_mem_alloc(canvas_width * canvas_height * sizeof(lv_color_t));
-    if (!buf) return -1;
-    comp->cbuf = lv_img_buf_alloc(canvas_width, canvas_height, LV_IMG_CF_TRUE_COLOR, buf);
-    if (!comp->cbuf) {
-        lv_mem_free(buf);
-        return -1;
-    }
     comp->canvas = lv_canvas_create(parent);
     if (!comp->canvas) {
-        lv_img_buf_free(comp->cbuf);
-        lv_mem_free(buf);
         return -1;
     }
-    lv_canvas_set_buffer(comp->canvas, buf, canvas_width, canvas_height, LV_IMG_CF_TRUE_COLOR, 0);
 
     comp->initialized = true;
     return 0;

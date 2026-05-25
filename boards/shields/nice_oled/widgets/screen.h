@@ -2,6 +2,7 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
+#include "../display/render/screen_common.h"
 #include "util.h"
 #include <lvgl.h>
 #include <zephyr/kernel.h>

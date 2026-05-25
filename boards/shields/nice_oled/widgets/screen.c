@@ -27,7 +27,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "output.h"
 #include "profile.h"
 #include "screen.h"
-#include "../../display/render/screen_common.h"
 
 #ifdef CONFIG_NICE_OLED_WIDGET_RAW_HID
 #include <lvgl.h>

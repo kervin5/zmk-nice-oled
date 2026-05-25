@@ -2,7 +2,7 @@
 
 Date: `2026-05-25`
 Branch: `refactor`
-Status: `Phase 1 partially complete`
+Status: `Phase 1 — Compositor boundaries defined`
 
 ## Purpose
 
@@ -111,27 +111,47 @@ Current benefit:
 - this already removes some no-op redraw churn
 - visuals were intentionally preserved
 
+### 5. Compositor Boundaries Defined
+
+Central and peripheral compositors now own canvas lifecycle:
+
+- `boards/shields/nice_oled/display/render/screen_common.h` — shared compositor interface
+- `boards/shields/nice_oled/display/render/screen_central.c` — central draw orchestration + static draw helpers
+- `boards/shields/nice_oled/display/render/screen_peripheral_render.c` — peripheral draw orchestration + static draw helpers
+
+Changes:
+
+- Draw helpers moved from screen.c into screen_central.c as static functions (battery_text, mods_status, hid_status)
+- Draw helpers moved from screen_peripheral.c into screen_peripheral_render.c as static functions (battery_status, output_status, layer_status)
+- Both widget files now use `nice_oled_screen_*_init()` and `nice_oled_screen_*_redraw()` instead of direct canvas manipulation
+- Old `draw_canvas()` functions removed entirely from both widget files
+- Listeners call compositor redraw entry points as thin wrappers
+- CMakeLists.txt updated to compile screen_central.c and screen_peripheral_render.c
+
+Memory impact:
+
+- Central: FLASH 36.38% (was 36.56%), RAM 32.38% (was 42.14%)
+- Peripheral: FLASH 30.94%, RAM 25.25%
+
 ## What Is Still Not Fixed
 
 These are the most important remaining issues.
 
-### 1. `screen.c` Is Still a God File
+### 1. `screen.c` Is Partially Refactored
 
-Even after model extraction, central ownership is still concentrated in:
+Central ownership has been split into compositor modules:
 
-- [boards/shields/nice_oled/widgets/screen.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen.c)
+- [boards/shields/nice_oled/display/render/screen_central.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/display/render/screen_central.c) — canvas lifecycle + draw orchestration
+- [boards/shields/nice_oled/widgets/screen.c](/Users/kevvin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen.c) — listeners + thin wrappers only
 
-It still owns:
+Remaining responsibilities in screen.c:
 
-- event listeners
-- composite draw ordering
-- RAW HID drawing
-- fixed modifier drawing
-- WPM redraw path
-- initialization of several child widgets
+- Event listener registration and callback wiring
+- Child widget initialization (animation widgets, etc.)
+- RAW HID drawing (still inline)
+- Profile/WPM animation path setup
 
-The model layer reduced coupling, but the compositor boundary is still not
-clean.
+The compositor boundary is now clean for draw operations. The remaining work is migrating the non-draw concerns out of screen.c into their own modules.
 
 ### 2. Dirty Flags Exist but Are Not Yet Driving Render Policy
 
@@ -201,14 +221,16 @@ avoid building more permanent architecture on top of the flattened fields.
 
 ## Verified Build State
 
-The latest verified local smoke build command was:
+The latest verified local smoke build commands were:
+
+### Central (corne_left nice_oled)
 
 ```sh
 source /Users/kervin/Coding/keyboard/zmk-nice-oled/.venv/bin/activate
 export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
 export GNUARMEMB_TOOLCHAIN_PATH=/opt/homebrew
 cd /Users/kervin/Coding/keyboard/zmk-nice-oled/tmp/zmk-build-smoke/zmk
-west build -p always -s app -d build/nice_oled -b nice_nano_v2 -- \
+west build -p always -s app -d build/nice_oled_central -b nice_nano_v2 -- \
   -DSHIELD="corne_left nice_oled" \
   -DZMK_CONFIG=/Users/kervin/Coding/keyboard/zmk-nice-oled/tests/fixtures/zmk-config/config \
   -DZMK_EXTRA_MODULES=/Users/kervin/Coding/keyboard/zmk-nice-oled
@@ -216,8 +238,28 @@ west build -p always -s app -d build/nice_oled -b nice_nano_v2 -- \
 
 Result:
 
-- build passed
+- build passed (562/562)
 - `zmk.elf` and `zmk.uf2` generated
+- FLASH: 36.38%, RAM: 32.38%
+
+### Peripheral (corne_right nice_oled)
+
+```sh
+source /Users/kervin/Coding/keyboard/zmk-nice-oled/.venv/bin/activate
+export ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb
+export GNUARMEMB_TOOLCHAIN_PATH=/opt/homebrew
+cd /Users/kervin/Coding/keyboard/zmk-nice-oled/tmp/zmk-build-smoke/zmk
+west build -p always -s app -d build/nice_oled_peripheral -b nice_nano_v2 -- \
+  -DSHIELD="corne_right nice_oled" \
+  -DZMK_CONFIG=/Users/kervin/Coding/keyboard/zmk-nice-oled/tests/fixtures/zmk-config/config \
+  -DZMK_EXTRA_MODULES=/Users/kervin/Coding/keyboard/zmk-nice-oled
+```
+
+Result:
+
+- build passed (522/522)
+- `zmk.elf` and `zmk.uf2` generated
+- FLASH: 30.94%, RAM: 25.25%
 
 Observed non-blocking warnings:
 
@@ -230,9 +272,12 @@ At the time of handoff, the main uncommitted work is in:
 
 - [boards/shields/nice_oled/CMakeLists.txt](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/CMakeLists.txt)
 - [boards/shields/nice_oled/widgets/screen.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen.c)
+- [boards/shields/nice_oled/widgets/screen.h](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen.h)
 - [boards/shields/nice_oled/widgets/screen_peripheral.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen_peripheral.c)
-- [boards/shields/nice_oled/widgets/util.h](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/util.h)
-- [boards/shields/nice_oled/display/model](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/display/model)
+- [boards/shields/nice_oled/widgets/screen_peripheral.h](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/widgets/screen_peripheral.h)
+- [boards/shields/nice_oled/display/render/screen_common.h](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/display/render/screen_common.h)
+- [boards/shields/nice_oled/display/render/screen_central.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/display/render/screen_central.c)
+- [boards/shields/nice_oled/display/render/screen_peripheral_render.c](/Users/kervin/Coding/keyboard/zmk-nice-oled/boards/shields/nice_oled/display/render/screen_peripheral_render.c)
 - [docs/superpowers/plans/2026-05-25-display-platform-migration-plan.md](/Users/kervin/Coding/keyboard/zmk-nice-oled/docs/superpowers/plans/2026-05-25-display-platform-migration-plan.md)
 - [docs/superpowers/tracking/2026-05-25-display-platform-migration-tracker.md](/Users/kervin/Coding/keyboard/zmk-nice-oled/docs/superpowers/tracking/2026-05-25-display-platform-migration-tracker.md)
 
@@ -242,27 +287,23 @@ There is no commit for this work yet.
 
 The strongest next move is:
 
-### Finish Phase 1: Define Widget and Compositor Boundaries
+### Finish Phase 1: Migrate Remaining Draw Consumers to Compositor
 
-Do this before trying to “optimize” more hot paths blindly.
+Phase 1 compositor boundaries are defined. The remaining work is:
 
-Recommended order:
+1. Migrate RAW HID drawing out of screen.c into the central compositor (or a dedicated RAW HID renderer).
+2. Migrate fixed modifier drawing out of screen.c into the central compositor.
+3. Migrate WPM animation path setup out of screen.c.
+4. Once all draw consumers are migrated, clean up `status_state` and remove legacy canvas manipulation from widget files.
 
-1. Introduce explicit central and peripheral compositor modules.
-2. Move pure draw helpers toward renderer-style ownership.
-3. Keep `status_state` compatibility only long enough to cross that boundary.
-4. Once compositor seams exist, start migrating the hottest path:
-   fixed modifiers.
+### Phase 2: Migrate Hottest Paths to Persistent Widgets
 
-## Recommended Refactor After That
+After Phase 1 is complete:
 
-After compositor boundaries are in place, attack hot paths in this order:
-
-1. Move fixed modifiers to a persistent LVGL widget.
+1. Move fixed modifiers to a persistent LVGL widget (highest impact hot path).
 2. Move numeric WPM to a persistent LVGL widget.
 3. Move RAW HID text fields to persistent LVGL labels.
 4. Restrict full canvas redraw to structural domains only.
-5. Split RAW HID transport/decode/model bridge properly.
 
 ## Things The Next Agent Should Be Careful Not To Do
 
