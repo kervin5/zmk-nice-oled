@@ -24,7 +24,7 @@
 - Create: `.github/workflows/build-matrix.yml`
 - Modify: `README.md`
 
-- [ ] **Step 1: Write the failing CI workflow and fixture references**
+- [x] **Step 1: Write the failing CI workflow and fixture references**
 
 ```yaml
 name: build-matrix
@@ -47,12 +47,12 @@ jobs:
           - nice_oled_raw_hid
 ```
 
-- [ ] **Step 2: Run the workflow locally at the config level to verify fixtures are still missing**
+- [x] **Step 2: Run the workflow locally at the config level to verify fixtures are still missing**
 
 Run: `rg -n "tests/fixtures/zmk-config|build-matrix" .github README.md tests`
 Expected: no matching fixture files yet, or workflow references missing
 
-- [ ] **Step 3: Define minimal fixture configuration files**
+- [x] **Step 3: Define minimal fixture configuration files**
 
 ```conf
 CONFIG_ZMK_DISPLAY=y
@@ -74,7 +74,7 @@ include:
 };
 ```
 
-- [ ] **Step 4: Wire the GitHub Actions workflow to build the matrix**
+- [x] **Step 4: Wire the GitHub Actions workflow to build the matrix**
 
 ```yaml
 - name: Build fixture
@@ -92,7 +92,7 @@ include:
       -DZMK_EXTRA_MODULES="$GITHUB_WORKSPACE"
 ```
 
-- [ ] **Step 5: Run static verification locally**
+- [x] **Step 5: Run static verification locally**
 
 Run: `rg -n "build-matrix|tests/fixtures/zmk-config" .github README.md tests`
 Expected: workflow and fixture paths present
@@ -109,7 +109,7 @@ Expected: workflow and fixture paths present
 - Create: `boards/shields/nice_oled/display/model/dirty_domains.h`
 - Modify: `boards/shields/nice_oled/widgets/util.h`
 
-- [ ] **Step 1: Define dirty-domain flags and typed display state**
+- [x] **Step 1: Define dirty-domain flags and typed display state**
 
 ```c
 enum nice_oled_dirty_domain {
@@ -125,12 +125,12 @@ enum nice_oled_dirty_domain {
 };
 ```
 
-- [ ] **Step 2: Run a symbol check to verify the new model layer does not exist yet**
+- [x] **Step 2: Run a symbol check to verify the new model layer does not exist yet**
 
 Run: `rg -n "NICE_OLED_DIRTY_|central_state|peripheral_state|raw_hid_state" boards/shields/nice_oled`
 Expected: no matches before implementation
 
-- [ ] **Step 3: Move display-facing state out of the monolithic `status_state` into explicit model structs**
+- [x] **Step 3: Move display-facing state out of the monolithic `status_state` into explicit model structs**
 
 ```c
 struct nice_oled_central_state {
@@ -144,14 +144,14 @@ struct nice_oled_central_state {
 };
 ```
 
-- [ ] **Step 4: Add change-application helpers that return dirty flags**
+- [x] **Step 4: Add change-application helpers that return dirty flags**
 
 ```c
 uint32_t nice_oled_central_apply_wpm(struct nice_oled_central_state *state, uint8_t wpm);
 uint32_t nice_oled_central_apply_modifiers(struct nice_oled_central_state *state, uint8_t mods);
 ```
 
-- [ ] **Step 5: Verify model-layer symbols are discoverable**
+- [x] **Step 5: Verify model-layer symbols are discoverable**
 
 Run: `rg -n "nice_oled_central_apply_|NICE_OLED_DIRTY_" boards/shields/nice_oled/display/model`
 Expected: model update helpers and dirty flags present

@@ -30,6 +30,9 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
 
     zephyr_library_sources(custom_status_screen.c)
     zephyr_library_sources(assets/images.c)
+    zephyr_library_sources(display/model/central_state.c)
+    zephyr_library_sources(display/model/peripheral_state.c)
+    zephyr_library_sources(display/model/raw_hid_state.c)
 
     if(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL OR CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ONLY OR CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
       # TODO

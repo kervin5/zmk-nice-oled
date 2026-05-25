@@ -516,9 +516,15 @@ static void draw_mods_status(lv_obj_t *canvas, const struct status_state *state)
 static void set_mods_status(struct zmk_widget_screen *widget,
                             struct mods_status_state state /* No usada directamente */) {
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    // Obtiene el estado actual de los modificadores directamente
-    widget->state.mod_state = zmk_hid_get_explicit_mods();
-    // Vuelve a dibujar todo el canvas para reflejar el cambio
+    const nice_oled_dirty_mask_t dirty =
+        nice_oled_central_apply_modifiers(&widget->state.central, state.mods);
+
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
+
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 #endif
 }
@@ -707,11 +713,17 @@ static struct is_connected_notification get_is_hid_connected(const zmk_event_t *
 }
 
 static void hid_is_connected_update_cb(struct is_connected_notification is_connected) {
-    // Actualiza el estado en *todos* los widgets de pantalla y redibuja
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        widget->state.is_connected = is_connected.value;
-        // Llama a la función principal de dibujo para actualizar toda la pantalla
+        const nice_oled_dirty_mask_t dirty = nice_oled_raw_hid_apply_connection(
+            &widget->state.central.raw_hid, is_connected.value);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -733,8 +745,15 @@ static struct time_notification get_time(const zmk_event_t *eh) {
 static void hid_time_update_cb(struct time_notification time) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        widget->state.hour = time.hour;
-        widget->state.minute = time.minute;
+        const nice_oled_dirty_mask_t dirty =
+            nice_oled_raw_hid_apply_time(&widget->state.central.raw_hid, time.hour, time.minute);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -756,7 +775,15 @@ static struct volume_notification get_volume(const zmk_event_t *eh) {
 static void hid_volume_update_cb(struct volume_notification volume) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        widget->state.volume = volume.value;
+        const nice_oled_dirty_mask_t dirty =
+            nice_oled_raw_hid_apply_volume(&widget->state.central.raw_hid, volume.value);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -779,7 +806,15 @@ static struct layout_notification get_layout(const zmk_event_t *eh) {
 static void hid_layout_update_cb(struct layout_notification layout) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        widget->state.layout = layout.value;
+        const nice_oled_dirty_mask_t dirty =
+            nice_oled_raw_hid_apply_layout(&widget->state.central.raw_hid, layout.value);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -797,7 +832,15 @@ ZMK_SUBSCRIPTION(widget_layout, layout_notification);
 static void weather_status_update_cb(struct weather_notification weather) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        widget->state.temperature = weather.temperature;
+        const nice_oled_dirty_mask_t dirty = nice_oled_raw_hid_apply_temperature(
+            &widget->state.central.raw_hid, weather.temperature);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -821,8 +864,15 @@ ZMK_SUBSCRIPTION(widget_weather_status, weather_notification);
 static void spotify_status_update_cb(struct spotify_notification spotify) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        memcpy(widget->state.media_player, spotify.media_player,
-               sizeof(widget->state.media_player));
+        const nice_oled_dirty_mask_t dirty = nice_oled_raw_hid_apply_media_player(
+            &widget->state.central.raw_hid, spotify.media_player);
+
+        if (dirty == NICE_OLED_DIRTY_NONE) {
+            continue;
+        }
+
+        widget->state.dirty |= dirty;
+        nice_oled_status_state_sync_from_central(&widget->state);
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -904,12 +954,21 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 
 static void set_battery_status(struct zmk_widget_screen *widget,
                                struct battery_status_state state) {
+    const nice_oled_dirty_mask_t dirty = nice_oled_central_apply_battery_state(
+        &widget->state.central, state.level,
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
-    widget->state.charging = state.usb_present;
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
+        state.usb_present
+#else
+        false
+#endif
+    );
 
-    widget->state.battery = state.level;
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
 
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -944,13 +1003,16 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
 
 static void set_battery_status(struct zmk_widget_screen *widget, struct battery_state state) {
-    if (state.source >= CONFIG_NICE_OLED_SPLIT_TOTAL_DEVICES) {
+    LOG_DBG("Source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
+    const nice_oled_dirty_mask_t dirty = nice_oled_central_apply_split_battery_state(
+        &widget->state.central, state.source, state.level, state.usb_present);
+
+    if (dirty == NICE_OLED_DIRTY_NONE) {
         return;
     }
-    LOG_DBG("Source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
-    widget->state.batteries[state.source].level = state.level;
-    widget->state.batteries[state.source].usb_present = state.usb_present;
 
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -1016,9 +1078,15 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER)
 static void set_layer_status(struct zmk_widget_screen *widget, struct layer_status_state state) {
-    widget->state.layer_index = state.index;
-    widget->state.layer_label = state.label;
+    const nice_oled_dirty_mask_t dirty =
+        nice_oled_central_apply_layer(&widget->state.central, state.index, state.label);
 
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
+
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -1044,11 +1112,16 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
 static void set_output_status(struct zmk_widget_screen *widget,
                               const struct output_status_state *state) {
-    widget->state.selected_endpoint = state->selected_endpoint;
-    widget->state.active_profile_index = state->active_profile_index;
-    widget->state.active_profile_connected = state->active_profile_connected;
-    widget->state.active_profile_bonded = state->active_profile_bonded;
+    const nice_oled_dirty_mask_t dirty = nice_oled_central_apply_output(
+        &widget->state.central, &state->selected_endpoint, state->active_profile_index,
+        state->active_profile_connected, state->active_profile_bonded);
 
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
+
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -1083,11 +1156,11 @@ ZMK_SUBSCRIPTION(widget_output_status, zmk_ble_active_profile_changed);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM)
 static void set_wpm_status(struct zmk_widget_screen *widget, struct wpm_status_state state) {
-    for (int i = 0; i < 9; i++) {
-        widget->state.wpm[i] = widget->state.wpm[i + 1];
-    }
-    widget->state.wpm[9] = state.wpm;
+    const nice_oled_dirty_mask_t dirty =
+        nice_oled_central_apply_wpm(&widget->state.central, state.wpm);
 
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_central(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -1112,6 +1185,7 @@ ZMK_SUBSCRIPTION(widget_wpm_status, zmk_wpm_state_changed);
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
+    nice_oled_status_state_init(&widget->state);
 
     lv_obj_t *canvas = lv_canvas_create(widget->obj);
     lv_obj_align(canvas, LV_ALIGN_TOP_LEFT, 0, 0);
@@ -1178,21 +1252,6 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_SPOTIFY_MACOS)
     widget_spotify_status_init();
 #endif
-
-    // Inicializa el estado HID a "desconectado" para el primer dibujo
-    // Nota: Los valores iniciales (hora, vol, etc.) se obtendrán cuando lleguen los primeros
-    // eventos.
-    struct zmk_widget_screen *w;
-    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, w, node) {
-        w->state.is_connected = false; // Estado inicial por defecto
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_WEATHER)
-        w->state.temperature = 127; // Estado inicial para el clima (N/A)
-#endif
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_SPOTIFY_MACOS)
-        w->state.media_player[0] = '\0';
-#endif
-        // Otros campos HID se inicializarán a 0 o sus valores por defecto
-    }
 #endif // CONFIG_NICE_OLED_WIDGET_RAW_HID
 
     // tiene que estar siempre al final por la sobre exposicion!!

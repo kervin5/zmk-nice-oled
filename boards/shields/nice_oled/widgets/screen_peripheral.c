@@ -61,13 +61,21 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 
 static void set_battery_status(struct zmk_widget_screen *widget,
                                struct battery_status_state state) {
-
+    const nice_oled_dirty_mask_t dirty = nice_oled_peripheral_apply_battery_state(
+        &widget->state.peripheral, state.level,
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
-    widget->state.charging = state.usb_present;
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
+        state.usb_present
+#else
+        false
+#endif
+    );
 
-    widget->state.battery = state.level;
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
 
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_peripheral(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 
     // draw_animation(widget->obj, widget);
@@ -120,8 +128,15 @@ static struct peripheral_status_state get_state(const zmk_event_t *_eh) {
 
 static void set_connection_status(struct zmk_widget_screen *widget,
                                   struct peripheral_status_state state) {
-    widget->state.connected = state.connected;
+    const nice_oled_dirty_mask_t dirty =
+        nice_oled_peripheral_apply_connection(&widget->state.peripheral, state.connected);
 
+    if (dirty == NICE_OLED_DIRTY_NONE) {
+        return;
+    }
+
+    widget->state.dirty |= dirty;
+    nice_oled_status_state_sync_from_peripheral(&widget->state);
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -141,6 +156,7 @@ ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
+    nice_oled_status_state_init(&widget->state);
 
     lv_obj_t *canvas = lv_canvas_create(widget->obj);
     lv_obj_align(canvas, LV_ALIGN_TOP_LEFT, 0, 0);

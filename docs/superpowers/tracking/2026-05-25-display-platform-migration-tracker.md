@@ -11,7 +11,7 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 ## Current Focus
 
-- `[ ]` Phase 1 model extraction
+- `[~]` Phase 1 model extraction
 
 ## Phases
 
@@ -24,8 +24,8 @@ Use this file as the execution ledger for the migration. The architecture spec d
 ### Phase 1: Structural Containment
 
 - `[x]` Add build fixtures and CI matrix
-- `[ ]` Extract central/peripheral/raw HID model types
-- `[ ]` Add dirty-domain flags
+- `[x]` Extract central/peripheral/raw HID model types
+- `[x]` Add dirty-domain flags
 - `[ ]` Define widget/layout/theme boundaries in code
 
 ### Phase 2: Migrate Hottest Paths
@@ -63,10 +63,10 @@ Use this file as the execution ledger for the migration. The architecture spec d
 
 ### Models
 
-- `[ ]` `central_state`
-- `[ ]` `peripheral_state`
-- `[ ]` `raw_hid_state`
-- `[ ]` `dirty_domains`
+- `[x]` `central_state`
+- `[x]` `peripheral_state`
+- `[x]` `raw_hid_state`
+- `[x]` `dirty_domains`
 
 ### Renderers
 
@@ -123,3 +123,7 @@ Use this file as the execution ledger for the migration. The architecture spec d
 - Static verification passed for the new fixture paths and workflow references.
 - Local smoke build now passes for `corne_left nice_oled` using a repo-local `uv`-managed `.venv`, `west`, Homebrew `cmake`/`ninja`, and `GNUARMEMB_TOOLCHAIN_PATH=/opt/homebrew`.
 - Python-side build dependencies are now tracked in `pyproject.toml` and `uv.lock` instead of being installed out-of-band.
+- Phase 1 now has typed `central_state`, `peripheral_state`, `raw_hid_state`, and `dirty_domains` modules under `boards/shields/nice_oled/display/model`.
+- `widgets/util.h` is now a compatibility wrapper over the extracted models so the old draw paths still compile while event ownership shifts into explicit apply helpers.
+- Central and peripheral screen listeners now route updates through change-detection helpers and skip redraws when an event does not change the underlying display model.
+- Local smoke build still passes for `corne_left nice_oled` after the model extraction pass.
