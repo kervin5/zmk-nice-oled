@@ -28,7 +28,7 @@ static void draw_active_profile(lv_obj_t *canvas, const struct status_state *sta
     lv_draw_rect_dsc_t rect_white_dsc;
     init_rect_dsc(&rect_white_dsc, LVGL_FOREGROUND);
 
-    int offset = state->active_profile_index * 7;
+    int offset = state->central.active_profile_index * 7;
 
     lv_canvas_draw_rect(canvas, CONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_X + offset, CONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y, 3, 3, &rect_white_dsc);
 }
@@ -41,7 +41,7 @@ static void draw_active_profile_text(lv_obj_t *canvas, const struct status_state
     init_label_dsc(&label_dsc, LVGL_FOREGROUND, &pixel_operator_mono_8, LV_TEXT_ALIGN_LEFT);
 
     char text[14] = {};
-    snprintf(text, sizeof(text), "%d", state->active_profile_index + 1);
+    snprintf(text, sizeof(text), "%d", state->central.active_profile_index + 1);
 
     lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_Y, 35, &label_dsc, text);
 }
@@ -58,7 +58,7 @@ void draw_profile_status(lv_obj_t *canvas, const struct status_state *state) {
 
     for (int i = 0; i < 5; i++) {
         lv_canvas_draw_img(canvas, OFFSET_X + (i * 14), OFFSET_Y,
-                           i == state->active_profile_index ? &profile_active : &profile, &img_dsc);
+                           i == state->central.active_profile_index ? &profile_active : &profile, &img_dsc);
     }
 #else
     draw_inactive_profiles(canvas, state);
