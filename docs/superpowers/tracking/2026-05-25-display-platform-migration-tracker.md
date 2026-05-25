@@ -138,3 +138,14 @@ Use this file as the execution ledger for the migration. The architecture spec d
 - Tasks 8–9 completed: smoke build passes for both central and peripheral
 - Memory improved: FLASH 36.38%→36.38%, RAM 42.14%→32.38% (central); peripheral also improved
 - Phase 1 tracker item "Define widget/layout/theme boundaries in code" marked complete
+
+### 2026-05-25 (Compositor Boundary Cleanup)
+
+Tasks 1–8 of compositor boundary cleanup completed:
+- Task 1: Fixed code quality issues (#pragma once on .c files, duplicate includes)
+- Tasks 2–5: Migrated all remaining draw helpers to typed models (output, wpm, layer, profile)
+- Task 6: Removed dead sync calls from screen.c and screen_peripheral.c
+- Task 7: Smoke builds pass for both central and peripheral
+- Phase 1 tracker item "Define widget/layout/theme boundaries in code" fully complete
+
+Memory impact: Central FLASH 36.38%→36.37%, RAM stable at 32.38%. Peripheral FLASH 30.94%→30.93%, RAM stable at 25.25%.

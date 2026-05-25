@@ -133,6 +133,18 @@ Memory impact:
 - Central: FLASH 36.38% (was 36.56%), RAM 32.38% (was 42.14%)
 - Peripheral: FLASH 30.94%, RAM 25.25%
 
+### 6. Compositor Boundary Cleanup (COMPLETED)
+
+All draw helpers now read from typed models directly — no more legacy field access through `struct status_state`. The `nice_oled_status_state_sync_*` functions are dead code and have been removed from widget listeners. Code quality issues fixed (#pragma once on .c files, duplicate includes).
+
+Migrated fields:
+- output.c: selected_endpoint.transport, active_profile_bonded, active_profile_connected, connected
+- wpm.c: wpm[10] array (21 occurrences)
+- layer.c: layer_index, layer_label
+- profile.c: active_profile_index
+
+All builds pass. No visual changes.
+
 ## What Is Still Not Fixed
 
 These are the most important remaining issues.
