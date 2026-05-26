@@ -1,5 +1,7 @@
 #include <zephyr/kernel.h>
 
+#include <string.h>
+
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -1044,7 +1046,7 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER)
 static void set_layer_status(struct zmk_widget_screen *widget, struct layer_status_state state) {
     bool index_changed = (widget->state.layer_index != state.index);
-    const char *label_changed = (widget->state.layer_label != state.label);
+    bool label_changed = strcmp(widget->state.layer_label, state.label) != 0;
     if (!index_changed && !label_changed) {
         return;
     }
