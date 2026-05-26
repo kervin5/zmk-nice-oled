@@ -10,7 +10,7 @@ void to_uppercase(char *str) {
 }
 
 static lv_color_t cbuf_cache[CANVAS_HEIGHT * CANVAS_HEIGHT];
-static bool cbuf_cached = false;
+bool cbuf_cached = false;
 
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
   // Check if buffer has changed since last rotation
