@@ -83,12 +83,22 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
     if (!comp || !comp->initialized || !comp->canvas || !comp->central_state) {
         return;
     }
+
+    /* Skip full canvas redraw when only persistent-widget-owned domains changed.
+     * Persistent widgets (modifiers, raw_hid labels) update themselves independently. */
+    if (!needs_canvas_redraw(comp->dirty)) {
+        comp->dirty = NICE_OLED_DIRTY_NONE;
+        return;
+    }
+
     draw_canvas_central(comp->canvas, comp->central_state);
 
 #if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
     /* Legacy compatibility path: rotate the square canvas into portrait orientation. */
     rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT);
 #endif
+
+    comp->dirty = NICE_OLED_DIRTY_NONE;
 }
 
 /* ========================================================================

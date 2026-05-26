@@ -52,10 +52,19 @@ void nice_oled_screen_peripheral_redraw(struct nice_oled_compositor *comp) {
     if (!comp || !comp->initialized || !comp->canvas || !comp->peripheral_state) {
         return;
     }
+
+    /* Skip full canvas redraw when only persistent-widget-owned domains changed. */
+    if (!needs_canvas_redraw(comp->dirty)) {
+        comp->dirty = NICE_OLED_DIRTY_NONE;
+        return;
+    }
+
     draw_canvas_peripheral(comp->canvas, comp->peripheral_state);
 
 #if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
     /* Rotate canvas for portrait orientation — matches main branch behavior */
     rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT);
 #endif
+
+    comp->dirty = NICE_OLED_DIRTY_NONE;
 }

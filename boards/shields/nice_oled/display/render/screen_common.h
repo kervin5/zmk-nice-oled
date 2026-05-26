@@ -9,6 +9,15 @@
 struct nice_oled_central_state;
 struct nice_oled_peripheral_state;
 
+/* Domains that are owned by persistent widgets (no canvas redraw needed).
+ * Only MODIFIERS and RAW_HID use persistent LVGL objects — all other domains
+ * require a full canvas redraw through the compositor. */
+#define NICE_OLED_PERSISTENT_ONLY_DOMAINS (NICE_OLED_DIRTY_MODIFIERS | NICE_OLED_DIRTY_RAW_HID)
+
+static inline bool needs_canvas_redraw(nice_oled_dirty_mask_t dirty) {
+    return (dirty & ~NICE_OLED_PERSISTENT_ONLY_DOMAINS) != 0;
+}
+
 struct nice_oled_compositor {
     lv_obj_t *obj;              /* LVGL object (screen container) */
     lv_img_dsc_t *cbuf;         /* Canvas framebuffer buffer descriptor */
