@@ -221,6 +221,8 @@ static void redraw_modifiers_region(struct zmk_widget_screen *widget) {
     draw_mods_status(canvas, &widget->state);
     // Invalidate rotate cache since we modified cbuf directly (bypassing draw_canvas)
     cbuf_cached = false;
+    // Push the buffer to screen so modifiers appear immediately
+    rotate_canvas(canvas, widget->cbuf);
 }
 #endif
 
