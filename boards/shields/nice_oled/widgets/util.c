@@ -36,19 +36,24 @@ void init_line_dsc(lv_draw_line_dsc_t *line_dsc, lv_color_t color,
   line_dsc->width = width;
 }
 
-void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
+void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[], lv_coord_t width, lv_coord_t height) {
+  size_t pixel_count = (size_t)width * (size_t)height;
   static lv_color_t cbuf_tmp[NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE *
                              NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE];
-  memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
+
+  if (pixel_count > sizeof(cbuf_tmp) / sizeof(lv_color_t)) {
+    return;
+  }
+
+  memcpy(cbuf_tmp, cbuf, pixel_count * sizeof(lv_color_t));
 
   lv_img_dsc_t img;
   img.data = (void *)cbuf_tmp;
   img.header.cf = LV_IMG_CF_TRUE_COLOR;
-  img.header.w = NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE;
-  img.header.h = NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE;
+  img.header.w = width;
+  img.header.h = height;
 
   lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
   lv_canvas_transform(canvas, &img, 900, LV_IMG_ZOOM_NONE, -1, 0,
-                      NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE / 2,
-                      NICE_OLED_LEGACY_ROTATION_CANVAS_SIZE / 2, false);
+                      width / 2, height / 2, false);
 }

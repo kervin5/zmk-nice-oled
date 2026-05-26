@@ -56,6 +56,6 @@ void nice_oled_screen_peripheral_redraw(struct nice_oled_compositor *comp) {
 
 #if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
     /* Rotate canvas for portrait orientation — matches main branch behavior */
-    rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf);
+    rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT);
 #endif
 }
