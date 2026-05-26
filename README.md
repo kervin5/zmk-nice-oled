@@ -234,9 +234,9 @@ This document lists the available configuration options for the `nice_oled` shie
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH` | bool | `n` (OLED) | Enable GRAPH for WPM gauge/chart |
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE` | bool | `y` | Enable fixed range for WPM gauge/chart |
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE_MAX` | int | `100` | Fixed range maximum for WPM gauge/chart |
-| `CONFIG_NICE_OLED_WIDGET_WPM_LUNA` | bool | `y` | Enable wpm luna |
+| `CONFIG_NICE_OLED_WIDGET_WPM_LUNA` | bool | `n` | Enable wpm luna |
 | `CONFIG_NICE_OLED_WIDGET_WPM_LUNA_ANIMATION_MS` | int | `300` | Luna Animation in ms for WPM Widget |
-| `CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT` | bool | `n` | Enable wpm bongo cat |
+| `CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT` | bool | `y` | Enable wpm bongo cat |
 | `CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT_ANIMATION_MS` | int | `300` | Bongo Cat Animation in ms for WPM Widget |
 | `CONFIG_NICE_OLED_WIDGET_RESPONSIVE` | bool | `n` | Enable widget responsive (overrides stack to `4096`, priority to `3`) |
 | `CONFIG_NICE_OLED_WIDGET_RESPONSIVE_BONGO_CAT` | bool | `n` | Enable widget responsive bongo cat |
