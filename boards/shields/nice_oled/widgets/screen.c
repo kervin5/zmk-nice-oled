@@ -505,9 +505,6 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     lv_obj_align(zmk_widget_sleep_status_obj(&sleep_status_widget), LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_SLEEP_STATUS_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_SLEEP_STATUS_CUSTOM_Y);
 #endif
 
-    /* One-time initial render — dirty flags only gate runtime event handlers */
-    nice_oled_screen_central_redraw(&widget->compositor);
-
     return 0;
 }
 

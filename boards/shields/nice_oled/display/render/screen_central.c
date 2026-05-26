@@ -50,8 +50,8 @@ int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *p
         return -1;
     }
 
-    /* Wire the canvas to its pixel buffer — without this, all draw calls are no-ops */
-    lv_canvas_set_buffer(comp->canvas, cbuf, CANVAS_WIDTH, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+    /* Wire the canvas to its pixel buffer — square buffer matches main branch coordinate system */
+    lv_canvas_set_buffer(comp->canvas, cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
 
     comp->initialized = true;
     return 0;
@@ -63,10 +63,8 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
     }
     draw_canvas_central(comp->canvas, comp->central_state);
 
-#if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
-    /* Rotate canvas for portrait orientation — matches main branch behavior */
+    /* Always rotate — matches main branch behavior */
     rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf);
-#endif
 }
 
 /* ========================================================================
