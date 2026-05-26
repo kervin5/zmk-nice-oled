@@ -289,3 +289,16 @@ All 7 tasks completed with two-stage review (spec compliance + code quality). Br
 - `Additional uncovered gaps:` 2
 
 **Bottom line:** the refactor is real and valuable, but it is not finished. Use this tracker as the source of truth instead of the earlier "12/12 complete" claim.
+
+### Task 8: Update E-Paper (NICE_EPAPER_ON) Kconfig Defaults for Portrait Layout ✅ VERIFIED COMPLETE
+- **Commit:** `44c9410`
+- **File:** `boards/shields/nice_oled/Kconfig.defconfig`
+- **Changes:** 31 NICE_EPAPER_ON X/Y defaults updated from legacy rotated coordinates to portrait-friendly values
+- **Critical fixes:** Luna X=22, Bongo Cat X=21, HID Indicators X=0, Responsive Bongo Cat Y=95 (were all off-screen at X=100 or Y=-9)
+- **High-confidence misplacements:** Layer Y=60, Profile positions aligned, Modifiers at left edge, Animation Peripheral Y=45
+- **RAW HID labels:** All Y values matched to OLED portrait positions (100/112/136/124/148)
+- **Other adjustments:** Battery centered, Output icons repositioned, WPM gauge/needle/label aligned
+- **Spec review:** Passed — all 28 required EPAPER changes verified correct (spec reviewer's initial report had errors claiming NICE_OLED_ON defaults were changed when they weren't)
+- **Code quality review:** Approved (minor: README.md out of sync, hardcoded RAW HID values in screen.c pre-existing issue)
+
+---
