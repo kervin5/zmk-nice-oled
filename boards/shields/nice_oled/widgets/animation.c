@@ -176,8 +176,6 @@ void draw_animation(lv_obj_t *canvas, struct zmk_widget_screen *widget) {
     lv_obj_t *art = lv_animimg_create(canvas);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL)
-    lv_obj_center(art);
-
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_HEAD)
     lv_animimg_set_src(art, (const void **)head_imgs, 16);
 #elif IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CAT)
@@ -212,7 +210,11 @@ void draw_animation(lv_obj_t *canvas, struct zmk_widget_screen *widget) {
        // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL)
 
     if (art) {
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL)
+        lv_obj_center(art);
+#else
         lv_obj_align(art, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_Y);
+#endif
     }
 }
 #endif

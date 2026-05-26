@@ -717,13 +717,13 @@ config NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y
 ## ANIMATION PERIPHERAL POSITION {{{
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_X
     int "Animation peripheral X position"
-    default 18 if NICE_OLED_ON
+    default 0 if NICE_OLED_ON
     default 36 if NICE_EPAPER_ON
-    default 18
+    default 0
 
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_Y
     int "Animation peripheral Y position"
-    default -18 if NICE_OLED_ON
+    default 45 if NICE_OLED_ON
     default 0 if NICE_EPAPER_ON
     default -18
 ##}}}
