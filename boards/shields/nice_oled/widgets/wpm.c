@@ -20,7 +20,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    nice_oled_central_draw_img_compat(canvas, 0, 65, &grid, &img_dsc);
+    nice_oled_central_draw_img_compat(canvas, 0, 100, &grid, &img_dsc);
 }
 
 static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
@@ -40,8 +40,8 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
         if (value > max) {
             value = max;
         }
-        points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (value * 32 / max);
+        points[i].x = i * 6.7;
+        points[i].y = 128 - (value * 28 / max);
     }
 #else
     int max = 0;
@@ -62,8 +62,8 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
     }
 
     for (int i = 0; i < 10; i++) {
-        points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (state->wpm[i] - min) * 32 / range;
+        points[i].x = i * 6.7;
+        points[i].y = 128 - (state->wpm[i] - min) * 28 / range;
     }
 #endif
 
@@ -79,7 +79,7 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
 #define DRAW_LABEL_TEXT_ALIGN LV_TEXT_ALIGN_CENTER
 #define DRAW_LABEL_FONTS &lv_font_montserrat_14
 #define DRAW_LABEL_WMP "w:"
-#define DRAW_LABEL_WMP_Y 110
+#define DRAW_LABEL_WMP_Y 148
 #define DRAW_LABEL_WMP_X 12
 
 #else
@@ -87,7 +87,7 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
 #define DRAW_LABEL_TEXT_ALIGN LV_TEXT_ALIGN_RIGHT
 #define DRAW_LABEL_FONTS &pixel_operator_mono_16
 #define DRAW_LABEL_WMP "WPM"
-#define DRAW_LABEL_WMP_Y 103
+#define DRAW_LABEL_WMP_Y 135
 #define DRAW_LABEL_WMP_X 26
 
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_VER)
@@ -177,7 +177,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    nice_oled_central_draw_img_compat(canvas, -1, 95, &grid, &img_dsc);
+    nice_oled_central_draw_img_compat(canvas, 0, 100, &grid, &img_dsc);
 }
 
 static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
@@ -199,8 +199,8 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
         }
 
         // modificar aqui par la posicion de la grafica
-        points[i].x = -36 + i * 7.4;
-        points[i].y = 127 - (value * 32 / max);
+        points[i].x = i * 6.7;
+        points[i].y = 128 - (value * 28 / max);
         // points[i].y = 132 - (value * 32 / max);
     }
 #else
@@ -222,8 +222,8 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
     }
 
     for (int i = 0; i < 10; i++) {
-        points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (state->wpm[i] - min) * 32 / range;
+        points[i].x = i * 6.7;
+        points[i].y = 128 - (state->wpm[i] - min) * 28 / range;
     }
 #endif
 
