@@ -434,6 +434,10 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     if (nice_oled_screen_central_init(&widget->compositor, widget->obj, widget->cbuf) != 0) {
         return -1;
     }
+
+    /* Wire compositor to the typed model — without this, redraw() always returns early */
+    widget->compositor.central_state = &widget->central;
+
     lv_obj_t *canvas = widget->compositor.canvas;
 
     sys_slist_append(&widgets, &widget->node);
