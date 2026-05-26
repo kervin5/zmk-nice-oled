@@ -134,6 +134,24 @@ static lv_obj_t *luna_imgs = NULL; // Variable estática para almacenar el objet
 
 #endif
 
+/**
+ * Destroys the current animation object if it exists.
+ * Called before switching to a different modifier animation type.
+ */
+static void destroy_current_animation(void) {
+#if defined(MODIFIERS_USE_BONGO_CAT)
+    if (bongo_imgs) {
+        lv_obj_del(bongo_imgs);
+        bongo_imgs = NULL;
+    }
+#elif defined(MODIFIERS_USE_LUNA)
+    if (luna_imgs) {
+        lv_obj_del(luna_imgs);
+        luna_imgs = NULL;
+    }
+#endif
+}
+
 static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) {
     uint8_t mods = zmk_hid_get_explicit_mods();
     /* Limpiamos el texto del label, ya que se usarán imágenes fijas */
@@ -196,6 +214,7 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
 #elif defined(MODIFIERS_USE_BONGO_CAT)
     /* En modo "bongo cat" se utiliza la lógica de animación */
     if (mods & (MOD_LGUI | MOD_RGUI)) {
+        destroy_current_animation();
         if (!bongo_imgs) {
             bongo_imgs = lv_animimg_create(label);
             lv_obj_center(bongo_imgs);
@@ -205,8 +224,12 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(bongo_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(bongo_imgs);
             lv_obj_align(bongo_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y);
+        } else {
+            // Animation exists but with wrong source — swap it
+            lv_animimg_set_src(bongo_imgs, (const void **)bongo_imgs_gui, 2);
         }
     } else if (mods & (MOD_LALT | MOD_RALT)) {
+        destroy_current_animation();
         if (!bongo_imgs) {
             bongo_imgs = lv_animimg_create(label);
             lv_obj_center(bongo_imgs);
@@ -216,8 +239,11 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(bongo_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(bongo_imgs);
             lv_obj_align(bongo_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(bongo_imgs, (const void **)bongo_imgs_alt, 2);
         }
     } else if (mods & (MOD_LCTL | MOD_RCTL)) {
+        destroy_current_animation();
         if (!bongo_imgs) {
             bongo_imgs = lv_animimg_create(label);
             lv_obj_center(bongo_imgs);
@@ -227,8 +253,11 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(bongo_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(bongo_imgs);
             lv_obj_align(bongo_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(bongo_imgs, (const void **)bongo_imgs_ctrl, 2);
         }
     } else if (mods & (MOD_LSFT | MOD_RSFT)) {
+        destroy_current_animation();
         if (!bongo_imgs) {
             bongo_imgs = lv_animimg_create(label);
             lv_obj_center(bongo_imgs);
@@ -238,6 +267,8 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(bongo_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(bongo_imgs);
             lv_obj_align(bongo_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(bongo_imgs, (const void **)bongo_imgs_shift, 2);
         }
     } else {
         if (bongo_imgs) {
@@ -249,6 +280,7 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
 #elif defined(MODIFIERS_USE_LUNA)
     /* En modo "luna" se utiliza la lógica de animación ya existente */
     if (mods & (MOD_LGUI | MOD_RGUI)) {
+        destroy_current_animation();
         if (!luna_imgs) {
             luna_imgs = lv_animimg_create(label);
             lv_obj_center(luna_imgs);
@@ -258,8 +290,11 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(luna_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(luna_imgs);
             lv_obj_align(luna_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(luna_imgs, (const void **)luna_imgs_sit_90, 2);
         }
     } else if (mods & (MOD_LALT | MOD_RALT)) {
+        destroy_current_animation();
         if (!luna_imgs) {
             luna_imgs = lv_animimg_create(label);
             lv_obj_center(luna_imgs);
@@ -269,8 +304,11 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(luna_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(luna_imgs);
             lv_obj_align(luna_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(luna_imgs, (const void **)luna_imgs_walk_90, 2);
         }
     } else if (mods & (MOD_LCTL | MOD_RCTL)) {
+        destroy_current_animation();
         if (!luna_imgs) {
             luna_imgs = lv_animimg_create(label);
             lv_obj_center(luna_imgs);
@@ -280,8 +318,11 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(luna_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(luna_imgs);
             lv_obj_align(luna_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(luna_imgs, (const void **)luna_imgs_run_90, 2);
         }
     } else if (mods & (MOD_LSFT | MOD_RSFT)) {
+        destroy_current_animation();
         if (!luna_imgs) {
             luna_imgs = lv_animimg_create(label);
             lv_obj_center(luna_imgs);
@@ -291,6 +332,8 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
             lv_animimg_set_repeat_count(luna_imgs, LV_ANIM_REPEAT_INFINITE);
             lv_animimg_start(luna_imgs);
             lv_obj_align(luna_imgs, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LUNA_CUSTOM_Y);
+        } else {
+            lv_animimg_set_src(luna_imgs, (const void **)luna_imgs_sneak_90, 2);
         }
     } else {
         if (luna_imgs) {
