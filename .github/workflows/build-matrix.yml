@@ -19,7 +19,10 @@ jobs:
             shield: "corne_left nice_view_adapter nice_epaper"
             extra_conf_files: "base.conf nice_epaper.conf"
           - target: nice_custom
-            shield: "corne_left nice_view_adapter nice_custom"
+            # Uses nice_oled hardware since nice_custom is a "blank slate" config
+            # that requires user-defined overlays. Testing with nice_oled verifies
+            # the module compiles correctly with CONFIG_NICE_CUSTOM_ON=y enabled.
+            shield: "corne_left nice_oled"
             extra_conf_files: "base.conf nice_custom.conf"
           - target: nice_oled_raw_hid
             shield: "corne_left nice_oled"

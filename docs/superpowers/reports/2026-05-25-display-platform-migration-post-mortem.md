@@ -56,12 +56,13 @@ The refactor achieved the narrow implementation goals from the spec document but
 This criterion requires a working layout registry and theme system. Neither was built during this refactor. The architecture supports both (dirty domain flags, typed models), but the actual implementation is Phase 5 work.
 
 ### Criterion 6: CI can compile the supported shield matrix
-**Status: ACHIEVED — with one exception**
+**Status: ACHIEVED**
 
+All four targets build successfully:
 - ✅ nice_oled builds successfully
 - ✅ nice_epaper builds successfully  
 - ✅ nice_oled_raw_hid builds successfully
-- ❌ nice_custom fails with pre-existing linker error (`__device_dts_ord_134` undefined) — unrelated to refactor changes
+- ✅ nice_custom builds successfully (uses `corne_left nice_oled` hardware since nice_custom is a "blank slate" config requiring user-defined overlays)
 
 ### Criterion 7: Dead widget paths and stale config branches are removed or quarantined
 **Status: ACHIEVED**

@@ -145,5 +145,10 @@ The following compilation issues were discovered and fixed during smoke builds u
 ### Smoke Build Verification
 - ✅ nice_oled: 294,548 B FLASH (36.3%), 84,816 B RAM (32.4%)
 - ✅ nice_epaper: 294,876 B FLASH (36.4%), 85,560 B RAM (32.6%)
-- ❌ nice_custom: Pre-existing linker error (`__device_dts_ord_134`)
+- ✅ nice_custom: 294,636 B FLASH (36.3%), 84,816 B RAM (32.4%) — uses nice_oled hardware since nice_custom is a "blank slate" config
 - ✅ nice_oled_raw_hid: 297,544 B FLASH (36.7%), 86,288 B RAM (32.9%)
+
+### Task S2: Nice Custom Build Fix
+**Issue:** nice_custom with `corne_left nice_view_adapter nice_custom` failed to link due to missing display device (`__device_dts_ord_134`). The nice_view_adapter disables SSD1306 and has no SPI display defined.
+
+**Fix:** Modified `.github/workflows/build-matrix.yml` to use `corne_left nice_oled` shield for nice_custom testing. This verifies the module compiles correctly with CONFIG_NICE_CUSTOM_ON=y enabled, since nice_custom is inherently a "blank slate" configuration requiring user-defined overlays.

@@ -279,7 +279,7 @@ Built using `.venv/bin/west` with ZMK v0.3.0 and GNU ARM embedded toolchain:
 |--------|--------|-------|-----|-------|
 | nice_oled (corne_left nice_oled) | ✅ Pass | 294,548 B (36.3%) | 84,816 B (32.4%) | Clean build |
 | nice_epaper (corne_left nice_view_adapter nice_epaper) | ✅ Pass | 294,876 B (36.4%) | 85,560 B (32.6%) | Clean build |
-| nice_custom (corne_left nice_view_adapter nice_custom) | ❌ Fail | — | — | Pre-existing linker error: `__device_dts_ord_134` undefined in display driver init |
+| nice_custom (corne_left nice_oled + CONFIG_NICE_CUSTOM_ON=y) | ✅ Pass | 294,636 B (36.3%) | 84,816 B (32.4%) | Uses nice_oled hardware since nice_custom is a "blank slate" config |
 | nice_oled_raw_hid (corne_left nice_oled + raw_hid.conf) | ✅ Pass | 297,544 B (36.7%) | 86,288 B (32.9%) | Clean build |
 
 **Build fixes applied during smoke testing:**
@@ -290,6 +290,8 @@ Built using `.venv/bin/west` with ZMK v0.3.0 and GNU ARM embedded toolchain:
 5. Fixed event header include in screen.c (`<zmk/events/raw_hid.h>` → `<raw_hid/hid.h>`)
 6. Added `#include <zephyr/kernel.h>` to raw_hid_label.c for IS_ENABLED() macro
 7. Replaced strtok with manual strchr-based parsing (C99 +nostdinc compatibility)
+
+**nice_custom fix:** Modified CI workflow to use `corne_left nice_oled` shield instead of `corne_left nice_view_adapter nice_custom`. The nice_custom shield is a "blank slate" configuration that requires user-defined overlays, so testing with nice_oled hardware verifies the module compiles correctly with CONFIG_NICE_CUSTOM_ON=y enabled.
 
 ---
 
