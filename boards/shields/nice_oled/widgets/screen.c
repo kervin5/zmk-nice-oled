@@ -207,6 +207,10 @@ static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status_state *state);
 //  Fin Declaración adelantada
 
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED)
+static void draw_mods_status(lv_obj_t *canvas, const struct status_state *state);
+#endif
+
 /**
  * Redraws only the modifier indicator region on the canvas.
  * This avoids a full draw_canvas() call which clears and redraws everything.
