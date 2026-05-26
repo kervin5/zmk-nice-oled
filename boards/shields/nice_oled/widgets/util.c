@@ -21,7 +21,7 @@ void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
   memcpy(cbuf_cache, cbuf, sizeof(cbuf_cache));
   cbuf_cached = true;
 
-  lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT];
+  static lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT];
   memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
 
   lv_img_dsc_t img;
