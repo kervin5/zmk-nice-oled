@@ -7,6 +7,9 @@
 #define CANVAS_WIDTH CONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH
 #define CANVAS_HEIGHT CONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT
 
+// Cache for rotate_canvas — exposed so screen.c can invalidate it after full redraws
+extern bool cbuf_cached;
+
 #define LVGL_BACKGROUND                                                                            \
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_INVERTED) ? lv_color_black() : lv_color_white()
 #define LVGL_FOREGROUND                                                                            \

@@ -1,5 +1,6 @@
 #include "util.h"
 #include <ctype.h>
+#include <string.h>
 #include <zephyr/kernel.h>
 
 void to_uppercase(char *str) {
@@ -8,8 +9,19 @@ void to_uppercase(char *str) {
   }
 }
 
+static lv_color_t cbuf_cache[CANVAS_HEIGHT * CANVAS_HEIGHT];
+static bool cbuf_cached = false;
+
 void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-  static lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT];
+  // Check if buffer has changed since last rotation
+  if (cbuf_cached && memcmp(cbuf, cbuf_cache, sizeof(cbuf_cache)) == 0) {
+    return;
+  }
+
+  memcpy(cbuf_cache, cbuf, sizeof(cbuf_cache));
+  cbuf_cached = true;
+
+  lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT];
   memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
 
   lv_img_dsc_t img;

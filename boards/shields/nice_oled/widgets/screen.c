@@ -927,6 +927,9 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 
     // Rotate for horizontal display
     rotate_canvas(canvas, cbuf);
+
+    // Invalidate the rotate cache since we just did a full redraw
+    cbuf_cached = false;
 }
 
 /**
