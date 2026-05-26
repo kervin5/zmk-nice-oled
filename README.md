@@ -229,8 +229,8 @@ This document lists the available configuration options for the `nice_oled` shie
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `CONFIG_NICE_OLED_WIDGET_WPM` | bool | `y` | Enable Nice OLED WPM Widget |
-| `CONFIG_NICE_OLED_WIDGET_WPM_NUMBER` | bool | `y` | Enable NUMBER for WPM |
-| `CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER` | bool | `y` (OLED) | Enable SPEEDOMETER for WPM |
+| `CONFIG_NICE_OLED_WIDGET_WPM_NUMBER` | bool | `n` | Enable NUMBER for WPM |
+| `CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER` | bool | `n` | Enable SPEEDOMETER for WPM |
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH` | bool | `n` (OLED) | Enable GRAPH for WPM gauge/chart |
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE` | bool | `y` | Enable fixed range for WPM gauge/chart |
 | `CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE_MAX` | int | `100` | Fixed range maximum for WPM gauge/chart |
@@ -314,8 +314,16 @@ When using `SYMBOL` style, the following real icons are displayed:
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `CONFIG_NICE_OLED_WIDGET_LAYER` | bool | `y` | Enable layer widget |
+| `CONFIG_NICE_OLED_WIDGET_LAYER_ANIMATION_MS` | int | `250` (OLED), `300` (ePaper) | Layer transition animation duration in ms (100–500) |
+| `CONFIG_NICE_OLED_WIDGET_LAYER_COLOR_FLASH` | bool | `y` | Enable background color flash on layer change |
 | `CONFIG_NICE_OLED_WIDGET_PROFILE_BIG` | bool | `n` | Enable show widget profile bigger |
 | `CONFIG_NICE_OLED_WIDGET_CENTRAL` | bool | `n` | Enable test widget on central |
+
+## Modifiers Indicators Options
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_HIDE_INACTIVE` | bool | `n` | Hide inactive modifier icons (only show pressed) |
 
 ## Battery Widget (Experimental)
 
