@@ -458,6 +458,10 @@ endchoice
 
 endif # NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED
 
+config NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_HIDE_INACTIVE
+    bool "Hide inactive modifier icons (only show pressed)"
+    default n
+
 config NICE_OLED_WIDGET_MODIFIERS_INDICATORS_LUNA
     bool "Enable modifiers indicators luna"
     default n
