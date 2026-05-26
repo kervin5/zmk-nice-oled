@@ -14,6 +14,8 @@ struct zmk_widget_screen {
     lv_color_t cbuf[CANVAS_HEIGHT * CANVAS_HEIGHT];
     struct nice_oled_peripheral_state peripheral;  /* Typed model — replaces struct status_state */
     struct nice_oled_compositor compositor;
+    lv_obj_t *smart_battery_anim;
+    lv_obj_t *smart_battery_static;
 };
 
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent);

@@ -3,6 +3,8 @@
 
 #include <zmk/usb.h>
 
+#include <zephyr/sys/util.h>
+
 #include <zephyr/logging/log.h>
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -51,7 +53,8 @@ static void send_report(const uint8_t *data, uint8_t len) {
 
     LOG_INF("USB - Sending Raw HID report of length %i", len);
     uint8_t report[CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE] = {0};
-    memcpy(report, data, len);
+    size_t copy_len = MIN((size_t)len, (size_t)CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE);
+    memcpy(report, data, copy_len);
     LOG_HEXDUMP_DBG(report, CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE,
                     "USB - Sending Raw HID report");
 

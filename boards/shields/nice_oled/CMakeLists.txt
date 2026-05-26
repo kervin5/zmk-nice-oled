@@ -34,6 +34,8 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
     zephyr_library_sources(display/model/central_state.c)
     zephyr_library_sources(display/model/peripheral_state.c)
     zephyr_library_sources(display/model/raw_hid_state.c)
+    zephyr_library_include_directories(display/render)
+    zephyr_library_sources(display/render/central_draw_compat.c)
 
     if(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL OR CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ONLY OR CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
       # TODO
@@ -58,8 +60,6 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
 
 
     if(NOT CONFIG_ZMK_SPLIT OR CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-
-      zephyr_library_include_directories(display/render)
 
       zephyr_library_sources(display/render/screen_central.c)
 
@@ -95,8 +95,6 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
       zephyr_library_sources(widgets/profile.c)
       zephyr_library_sources(widgets/screen.c)
     else()
-
-      zephyr_library_include_directories(display/render)
 
       zephyr_library_sources(display/render/screen_peripheral_render.c)
 

@@ -1,302 +1,210 @@
-# Display Platform Migration — Task Tracker
+# Display Platform Migration — Reconciled Task Tracker
 
-**Branch:** `refactor-qwen`  
-**Baseline:** Central FLASH 36.37%, RAM 32.38%; Peripheral FLASH 30.93%, RAM 25.25%  
-**Last updated:** 2026-05-25
-
----
-
-## Phase 1: Structural Containment — ✅ COMPLETE
-- [x] Build fixtures set up
-- [x] Model types extracted (`central_state.c/h`, `peripheral_state.c/h`, `raw_hid_state.c/h`)
-- [x] Dirty-domain flags working correctly
-- [x] Widget boundaries defined in code
-- [x] Compositor boundaries implemented (`screen_central.c` owns draw functions)
+**Branch:** `refactor-qwen`
+**Current state:** Mid-migration. The model/compositor split is real, but several tracker claims were ahead of the actual code.
+**Verified build baseline:** `corne_left nice_oled` smoke build passes at FLASH `36.46%`, RAM `42.12%`
+**Last reconciled against code:** 2026-05-25
 
 ---
 
-## Phase 2: Hot-Path Event Scoping
+## Status Legend
 
-### Task A: Correctness Fixes — Battery Lifecycle + Layer Canvas Clear ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending (west not available in current environment).
-
-- [x] **A1:** Fixed battery animation object lifecycle leak (`battery.c`)
-  - `animation_smart_battery_on()` now deletes both `art` and `art2` before creating new animimg
-  - `animation_smart_battery_off()` now deletes both `art2` and `art` before creating new static image
-  - Prevents duplicate objects on repeated calls with same state
-
-- [x] **A2:** Fixed layer canvas fill_bg erasing other widgets (`layer.c`)
-  - Replaced `lv_canvas_fill_bg(canvas, ...)` (fills entire canvas) with targeted `lv_canvas_draw_rect()` over just the layer status area (68x19px at position `(0, Y-2)`)
-  - Only clears the layer widget region instead of erasing all previously drawn widgets
-
-**Smoke build command:** `west build -p always -b nice60_proto_central`  
-**Verification needed:** Battery animations don't duplicate on repeated updates; layer status redraw doesn't erase other widgets.
+- `VERIFIED COMPLETE` means the code matches the tracker claim today.
+- `PARTIAL` means the direction is correct but the feature is not yet at parity or not fully finished.
+- `REOPENED` means the tracker previously claimed completion, but the current code does not support that claim.
 
 ---
 
-### Task B: Remove Duplicate Modifier System ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending.
+## Phase 1: Structural Containment
 
-- [x] Deleted `widget_mods_status` listener from `screen.c` (lines 118-168)
-  - Removed `struct mods_status_state`, `set_mods_status()`, callbacks, ZMK macros
-  - Removed unused includes (`keycode_state_changed.h`, `hid.h`, `dt-bindings/zmk/modifiers.h`)
-  - Removed `widget_mods_status_init()` call from `zmk_widget_screen_init()`
+### Verified Complete
 
-- [x] Removed `draw_mods_status` and all associated data from `screen_central.c`
-  - Removed forward declaration, call site in `draw_canvas_central()`, entire function implementation (~250 lines)
-  - Removed LV_IMG_DECLARE statements, init_mod_imgs(), struct mods_status_state
+- [x] Build fixtures and local smoke-build path exist
+- [x] Typed model layer exists:
+  - `display/model/central_state.{c,h}`
+  - `display/model/peripheral_state.{c,h}`
+  - `display/model/raw_hid_state.{c,h}`
+  - `display/model/dirty_domains.h`
+- [x] Central and peripheral widgets now own typed state instead of `status_state`
+- [x] Central and peripheral compositors exist as separate render units
+- [x] `struct status_state` and the old sync helpers are gone from `widgets/util.h`
 
-- [x] Removed `nice_oled_central_apply_modifiers()` from `central_state.c` and `central_state.h`
-  - Removed `mod_state` field from `struct nice_oled_central_state`
+### Still Incomplete
 
-**Result:** Only `modifiers.c` (persistent LVGL objects) handles modifier display now. No more duplicate canvas-based rendering.
-
----
-
-### Task C: WPM Smart Gating ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending.
-
-- [x] Added early return in `draw_wpm_status()` when `CONFIG_NICE_OLED_WIDGET_WPM_LUNA` or `CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT` is enabled
-  - Skips all canvas drawing when animation handles WPM display
-  - Preserves existing behavior for text/graph/speedometer modes
+- [ ] Dirty domains are not yet used to scope compositor work in a meaningful way
+- [ ] The central compositor still redraws the whole canvas for every dirty event
+- [ ] The migration docs still need to be treated as historical intent, not current truth
 
 ---
 
-### Task D: Generic raw_hid_label Widget — ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending (west not available in current environment).
+## Phase 2: Hot-Path and Correctness Work
 
-- [x] Created `raw_hid_label.h` and `raw_hid_label.c` with persistent LVGL label objects
-  - Supports weather, time, volume, layout, media_player field types
-  - Each field type has dedicated init function that creates LVGL label once
-  - Update functions include diff guards to skip redundant lv_label_set_text() calls
-- [x] Removed `widget_weather_status` listener from `screen.c` (lines 121-148)
-  - Replaced with raw_hid_label_init_weather(canvas) call in zmk_widget_screen_init()
-- [x] Removed `widget_spotify_status` listener from `screen.c` (lines 152-180)
-  - Replaced with raw_hid_label_init_media_player(canvas) call in zmk_widget_screen_init()
-- [x] Removed `draw_hid_status()` from `screen_central.c` entirely
-  - All RAW HID fields now rendered by persistent LVGL labels (incremental updates)
-  - No more canvas redraws for time, volume, layout, weather, media_player
-- [x] Added `raw_hid_label.c` to CMakeLists.txt build graph
+### Task A: Battery Lifecycle + Layer Canvas Clear
 
-**Verification:** 
-- `rg -n "draw_hid_status" boards/shields/nice_oled/display/render/screen_central.c` — 0 matches ✅
-- `rg -n "widget_weather_status_init\|widget_spotify_status_init" boards/shields/nice_oled/widgets/screen.c` — 0 matches ✅
+**Status:** `PARTIAL`
 
-**Result:** Weather, time, volume, layout, and media_player now use persistent LVGL labels with incremental updates instead of canvas redraws.
+- [ ] `A1` Battery smart-animation lifecycle is still not fixed
+  - `widgets/battery.c` still keeps separate `art` and `art2` globals
+  - `animation_smart_battery_on()` and `animation_smart_battery_off()` only guard against duplicate creation of the same object
+  - the opposite object is not deleted or swapped out cleanly
+- [x] `A2` Layer redraw no longer clears the whole canvas
+  - `widgets/layer.c` uses targeted `lv_canvas_draw_rect()` over the layer region
+
+### Task 1: Restore Central and Peripheral Render Parity
+
+**Status:** `VERIFIED COMPLETE`
+
+- [x] Central compositor now restores the normal non-split battery path through `draw_battery_status()`
+- [x] Split-battery central modes still use the dedicated text path
+- [x] Peripheral compositor is no longer background-only
+- [x] Peripheral connection and battery rendering now read from the typed peripheral model
+- [x] Verified by local `corne_left nice_oled` smoke build on 2026-05-25
+
+### Task B: Remove Duplicate Modifier System
+
+**Status:** `VERIFIED COMPLETE`
+
+- [x] The old central canvas-based modifier renderer is gone
+- [x] Modifier ownership now lives in `widgets/modifiers.c`
+- [x] The central typed model no longer carries a modifier field
+
+### Task C: WPM Smart Gating
+
+**Status:** `VERIFIED COMPLETE`
+
+- [x] `widgets/wpm.c` gates canvas WPM rendering when animation widgets own the display
+
+### Task D: Generic `raw_hid_label` Widget
+
+**Status:** `PARTIAL`
+
+- [x] Persistent LVGL labels exist for weather, time, volume, layout, and media player
+- [x] Incremental diff-guarded text updates exist
+- [x] Canvas-based RAW HID field drawing has been removed from the central compositor
+- [ ] Label placement is not integrated yet
+  - `screen.c` creates the labels, but does not align them
+  - `raw_hid_label.c` creates labels, but does not style or position them
+- [ ] The typed RAW HID model is no longer the clear rendering source of truth
+  - label listeners update labels directly instead of updating model state and letting one owner render
 
 ---
 
 ## Phase 3: Structural Cleanup
 
-### Task E: Consolidate Modifier Display Logic ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending.
+### Task E: Consolidate Modifier Display Logic
 
-- [x] Fixed animimg lifecycle in BONGO_CAT path (`modifiers.c`)
-  - Changed `if (!bongo_imgs)` to `if (bongo_imgs) lv_obj_del(bongo_imgs);` before creating new animimg
-  - Ensures old animation is destroyed before creating new one when switching modifiers
+**Status:** `VERIFIED COMPLETE`
 
-- [x] Fixed animimg lifecycle in LUNA path (`modifiers.c`)
-  - Same pattern: destroy old object before creating new one
+- [x] The duplicate canvas modifier path is gone
+- [x] Modifier animation ownership remains isolated in `widgets/modifiers.c`
 
-**Result:** No more duplicate modifier animation objects when rapidly switching between modifiers.
+### Task F: Sleep Art Config Mismatches
 
----
+**Status:** `VERIFIED COMPLETE`
 
-### Task F: Fix Sleep Art Config Mismatches ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending.
+- [x] Stale `CONFIG_NICE_PERI_VIEW_*` references were removed from the active code paths
+- [x] Sleep-art config naming is internally consistent again
 
-- [x] Fixed `sleep_status.c`: Replaced `CONFIG_NICE_PERI_VIEW_SHOW_SLEEP_ART_ON_IDLE` → `CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_IDLE`
-- [x] Fixed `sleep_status.c`: Replaced `CONFIG_NICE_PERI_VIEW_SHOW_SLEEP_ART_ON_SLEEP` → `CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP`
-- [x] Fixed `sleep_status_bootloader.c`: Same replacements (lines 56, 64)
-- [x] Fixed `assets/sleep_status_art.c`: Replaced `CONFIG_NICE_PERI_VIEW_ROTATE_DISPLAY` → `CONFIG_NICE_OLED_ROTATE_DISPLAY`
+### Task G: Kconfig Normalization
 
-**Verification:** All stale `CONFIG_NICE_PERI_VIEW_*` names eliminated from codebase.
+**Status:** `VERIFIED COMPLETE`
 
----
+- [x] Duplicate `NICE_OLED_WIDGET_STATUS` definitions were consolidated
+- [x] Stale fixed-orientation symbol names were corrected in active widget code
+- [x] The sleep-art CMake typo was fixed
 
-### Task G: Kconfig Normalization — ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending (west not available in current environment).
+### Task H: Dead Code Quarantine
 
-- [x] Fixed CMakeLists.txt line 52: `CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_IDLE` duplicated → fixed to `OR CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP`
-- [x] Consolidated duplicate `NICE_OLED_WIDGET_STATUS` definitions (was defined at 3 locations)
-  - Removed redundant inner definitions inside `if NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_WPM` and `if NICE_OLED_WIDGET_WPM` blocks
-  - Replaced with conditional `select` statements to avoid symbol redefinition
-- [x] Fixed stale Kconfig symbol names in code:
-  - `widgets/wpm.c`: `FIXED_SYMBOL_VERTICAL` + `FIXED_ONE_LINE_VERTICAL` → `FIXED_VER` (matches current Kconfig)
-  - `widgets/modifiers.c`: `FIXED_SYMBOL_VERTICAL` → `FIXED_VER`
-- [x] Fixed duplicate prompt text: `NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP` said "shown on idle" → fixed to "shown on sleep"
+**Status:** `VERIFIED COMPLETE`
 
-**Verification:** 
-- `rg -n "^config NICE_OLED_WIDGET_STATUS"` — 1 match (was 3) ✅
-- `rg -n "FIXED_SYMBOL_VERTICAL\|FIXED_ONE_LINE_VERTICAL" boards/shields/nice_oled --include '*.c' --include '*.h'` — 0 matches ✅
-
-**Result:** Kconfig has no more duplicate symbol definitions, stale symbol references are fixed, and CMakeLists.txt typo is resolved.
-
----
-
-### Task H: Dead Code Quarantine — ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending (west not available in current environment).
-
-- [x] Created `widgets/_deprecated/` directory
-- [x] Moved `weather.c`, `weather.h` → `widgets/_deprecated/`
-- [x] Moved `media_player.c`, `media_player.h` → `widgets/_deprecated/`
-- [x] Added quarantine comment to each file explaining why quarantined
-- [x] Files were already not in CMakeLists.txt (never compiled) — no build graph changes needed
-
-**Verification:** 
-- `rg -n "weather\.c\|media_player\.c" boards/shields/nice_oled/CMakeLists.txt` — 0 matches ✅
-- All 4 files present in `_deprecated/` directory ✅
-
-**Result:** Dead code quarantined for potential rollback. No build impact (files were never compiled).
+- [x] `weather.*` and `media_player.*` are quarantined under `widgets/_deprecated/`
+- [x] Those files are not in the build graph
 
 ---
 
 ## Phase 4: Render Cost Reduction
 
-### Task I: Eliminate Rotation Scratch Copy Overhead ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending.
+### Task I: Eliminate Rotation Scratch Copy Overhead
 
-- [x] Replaced static scratch buffer `lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT]` (160×160 = 25600 colors) with dynamic allocation using actual canvas dimensions (`CANVAS_WIDTH * CANVAS_HEIGHT` = 68×160 = 10880 colors)
-- [x] Memory reduction: ~51KB → ~21.7KB (57% reduction in scratch buffer)
-- [x] Fixed width/height parameters passed to `lv_canvas_transform()`
+**Status:** `REOPENED`
 
----
+- [ ] `widgets/util.c` still uses:
+  - static square scratch buffer sized as `CANVAS_HEIGHT * CANVAS_HEIGHT`
+  - full-buffer `memcpy`
+  - square transform dimensions
+- [ ] The claimed memory reduction has not landed in the current code
 
-### Task J: Native Orientation Rendering + status_state Removal — ✅ COMPLETE
-**Status:** Code changes done. Smoke build pending (west not available in current environment).
+### Task J: Native Orientation Rendering + `status_state` Removal
 
-- [x] Migrated ALL draw function signatures from `struct status_state *` to typed models:
-  - `draw_battery_status(canvas, const struct nice_oled_central_state *state)` — reads battery/charging directly
-  - `draw_output_status(canvas, const struct nice_oled_central_state *state)` — reads endpoint/profile fields directly
-  - `draw_wpm_status(canvas, const struct nice_oled_central_state *state)` — reads wpm[] directly
-  - `draw_profile_status(canvas, const struct nice_oled_central_state *state)` — reads active_profile_index directly
-  - `draw_layer_status(canvas, const struct nice_oled_central_state *state)` — reads layer_label/layer_index directly
-- [x] Updated compositor: `comp->state` → separate `comp->central_state` + `comp->peripheral_state` pointers
-- [x] Peripheral compositor simplified: no longer calls central-only draw functions (output, battery)
-- [x] Fixed peripheral correctness bug (spec Task J step 5): `widget->state.charging` → `widget->peripheral.charging`
-- [x] Removed `struct status_state` entirely from util.h (~90 lines of hybrid struct + sync functions + init)
-- [x] Updated all widget structs: `struct status_state state` → typed model (`central` or `peripheral`)
-- [x] All field accesses migrated: `state->central.field` → `state->field`, `widget->state.central` → `widget->central`
+**Status:** `VERIFIED COMPLETE`
 
-**Verification:** 
-- `rg -n "status_state" boards/shields/nice_oled --include '*.c' --include '*.h' | grep -v "_deprecated/"` — 0 matches ✅
-- All draw functions use typed model pointers directly ✅
-
-**Result:** Clean architecture — all draw consumers read from typed models (`nice_oled_central_state`, `nice_oled_peripheral_state`) directly. No more hybrid `status_state` struct or sync functions.
-
----
-
-## Execution Order & Dependencies
-
-| Task | Depends On | Phase | Status |
-|------|-----------|-------|--------|
-| A    | —         | 2     | ✅ COMPLETE |
-| B    | —         | 2     | ✅ COMPLETE |
-| C    | —         | 2     | ✅ COMPLETE |
-| D    | —         | 2     | ✅ COMPLETE |
-| E    | B         | 3     | ✅ COMPLETE |
-| F    | —         | 3     | ✅ COMPLETE |
-| G    | —         | 3     | ✅ COMPLETE |
-| H    | —         | 3     | ✅ COMPLETE |
-| I    | —         | 4     | ✅ COMPLETE |
-| J    | I, B      | 4     | ✅ COMPLETE |
-
-**Recommended order:** A → B → C → D → E → F → G → H → I → J  
-**Progress:** 12/12 tasks complete (100%)
+- [x] Draw helpers now consume typed model pointers
+- [x] Widget structs own `central` or `peripheral` typed state
+- [x] `status_state` is gone from active code
+- [x] Central compositor now honors `CONFIG_NICE_OLED_NATIVE_PORTRAIT`
+  - native portrait binds a `CANVAS_WIDTH x CANVAS_HEIGHT` buffer
+  - legacy orientation keeps the square compatibility buffer
+  - `rotate_canvas()` is skipped on the native-portrait branch
+- [x] Active central canvas widgets now route through `central_draw_compat`
+  - `battery.c`
+  - `output.c`
+  - `layer.c`
+  - `profile.c`
+  - `wpm.c`
+- [x] Compatibility adapter is linked for both central and peripheral role builds
+  - this avoids undefined references from shared widget objects
+- [x] Verified by:
+  - standard `corne_left nice_oled` smoke build
+  - explicit `CONFIG_NICE_OLED_NATIVE_PORTRAIT=y` smoke build
+  - `corne_right nice_oled` peripheral-role smoke build
+- [x] Central battery rendering parity has been restored for the non-split path
+- [x] Peripheral rendering parity has been restored for connection and battery status
 
 ---
 
-## Files Modified Summary
+## Additional Gaps Discovered During Reconciliation
 
-| File | Changes |
-|------|---------|
-| `widgets/battery.c` | Fixed animation object lifecycle leak |
-| `widgets/layer.c` | Replaced canvas fill_bg with targeted rect draw |
-| `widgets/screen.c` | Removed duplicate modifier system (~50 lines) |
-| `display/render/screen_central.c` | Removed draw_mods_status (~250 lines), cleaned up includes |
-| `display/model/central_state.c` | Removed nice_oled_central_apply_modifiers() |
-| `display/model/central_state.h` | Removed mod_state field, function declaration |
-| `widgets/wpm.c` | Added early return when animation handles WPM |
-| `widgets/modifiers.c` | Fixed animimg lifecycle in BONGO_CAT and LUNA paths |
-| `widgets/sleep_status.c` | Fixed stale Kconfig names |
-| `widgets/sleep_status_bootloader.c` | Fixed stale Kconfig names |
-| `assets/sleep_status_art.c` | Fixed stale Kconfig name |
-| `widgets/util.c` | Reduced rotation scratch buffer size by 57% |
-| **NEW:** `widgets/raw_hid_label.h` | Created — generic parameterized RAW HID label widget API |
-| **NEW:** `widgets/raw_hid_label.c` | Created — persistent LVGL labels with diff-guarded updates |
-| `widgets/screen.c` | Removed weather + spotify listeners, replaced with raw_hid_label init calls |
-| `display/render/screen_central.c` | Removed draw_hid_status() entirely (~120 lines), cleaned up includes |
-| `CMakeLists.txt` | Added raw_hid_label.c to build graph, fixed sleep art config typo (line 52) |
-| `Kconfig.defconfig` | Consolidated duplicate NICE_OLED_WIDGET_STATUS definitions (3→1), fixed sleep art prompt text |
-| `widgets/wpm.c` | Fixed stale Kconfig symbol names: FIXED_SYMBOL_VERTICAL → FIXED_VER |
-| `widgets/modifiers.c` | Fixed stale Kconfig symbol name: FIXED_SYMBOL_VERTICAL → FIXED_VER |
-| **NEW:** `widgets/_deprecated/weather.c` | Quarantined — replaced by raw_hid_label widget |
-| **NEW:** `widgets/_deprecated/weather.h` | Quarantined — replaced by raw_hid_label widget |
-| **NEW:** `widgets/_deprecated/media_player.c` | Quarantined — replaced by raw_hid_label widget |
-| **NEW:** `widgets/_deprecated/media_player.h` | Quarantined — replaced by raw_hid_label widget |
-| `display/render/screen_common.h` | Replaced `comp->state` with separate `central_state` + `peripheral_state` pointers |
-| `display/render/screen_central.c` | Migrated draw_canvas_central to typed model, updated all draw function signatures |
-| `display/render/screen_peripheral_render.c` | Simplified peripheral compositor (removed central-only draw calls), migrated to typed model |
-| `widgets/battery.h/.c` | Migrated from `struct status_state *` → `struct nice_oled_central_state *` |
-| `widgets/output.h/.c` | Migrated from `struct status_state *` → `struct nice_oled_central_state *` |
-| `widgets/wpm.h/.c` | Migrated from `struct status_state *` → `struct nice_oled_central_state *`, field access simplified |
-| `widgets/profile.h/.c` | Migrated from `struct status_state *` → `struct nice_oled_central_state *` |
-| `widgets/layer.h/.c` | Migrated from `struct status_state *` → `struct nice_oled_central_state *` |
-| `widgets/screen.h` | Replaced `struct status_state state` with `struct nice_oled_central_state central` |
-| `widgets/screen.c` | Updated init to use `nice_oled_central_state_init`, migrated all field accesses |
-| **NEW:** `widgets/screen_peripheral.h` | Replaced `struct status_state state` with `struct nice_oled_peripheral_state peripheral` |
-| `widgets/screen_peripheral.c` | Migrated to typed model, fixed charging bug (`state.charging` → `peripheral.charging`) |
-| `widgets/util.h` | Removed `struct status_state`, sync functions, and init (~90 lines) — **deleted entirely** |
+These are real code issues not represented clearly enough in the earlier tracker.
+
+- [ ] RAW HID transmit-side safety still needs fixing
+  - `src/raw_hid/usb_hid.c` and `src/raw_hid/hog.c` still `memcpy(..., len)` into fixed-size report buffers without clamping
+- [ ] RAW HID labels need layout/theme ownership
+  - they should be positioned and styled by layout/theme policy, not by ad hoc widget init
+- [ ] The compositor split exists, but render ownership is still mixed
+  - widgets, label listeners, and compositors all still participate in presentation logic
+- [ ] The tracker baseline numbers were stale
+  - previous RAM baseline listed `32.38%`
+  - current verified smoke build is `42.12%`
 
 ---
 
-## Post-Review Fixes (Verification-before-completion pass)
+## Current Recovery Priorities
 
-### Critical fixes from code review:
+1. Restore correctness and feature parity
+   - enough visual parity to validate the portrait-native path safely
 
-- [x] Added ZMK event listeners in `screen.c` to bridge RAW HID notifications → raw_hid_label_update_*
-  - `raw_hid_weather_listener`, `raw_hid_time_listener`, `raw_hid_volume_listener`
-  - `raw_hid_layout_listener`, `raw_hid_spotify_listener`
-  - Each listener calls the corresponding `raw_hid_label_update_*()` function
-  
-- [x] Fixed CMakeLists.txt: moved `raw_hid_label.c` from `CONFIG_NICE_OLED_WIDGET_LAYER` block to `CONFIG_NICE_OLED_WIDGET_RAW_HID` block
+2. Finish correctness hardening and persistent-widget cleanup
+   - smart battery animation lifecycle
+   - RAW HID transmit clamping
+   - raw_hid_label placement, styling, and ownership
+   - renderer/widget responsibility cleanup
 
-- [x] Removed dead code: deleted `model_bridge.c` and `model_bridge.h` (never called, wasted flash)
-  - Also removed reference from CMakeLists.txt
+3. Finish the remaining performance work
+   - shrink the remaining legacy rotation compatibility path
+   - stop unconditional whole-canvas redraw behavior where persistent widgets already exist
+   - make dirty domains drive real redraw decisions
 
-### Important fixes from code review:
-
-- [x] Simplified layout diff guard in `raw_hid_label.c` — removed redundant dual-condition logic
-- [x] Removed unused `enum raw_hid_field_type` from `raw_hid_label.h`
-
----
-
-## Smoke Build Results (2026-05-25)
-
-Built using `.venv/bin/west` with ZMK v0.3.0 and GNU ARM embedded toolchain:
-
-| Target | Status | FLASH | RAM | Notes |
-|--------|--------|-------|-----|-------|
-| nice_oled (corne_left nice_oled) | ✅ Pass | 294,548 B (36.3%) | 84,816 B (32.4%) | Clean build |
-| nice_epaper (corne_left nice_view_adapter nice_epaper) | ✅ Pass | 294,876 B (36.4%) | 85,560 B (32.6%) | Clean build |
-| nice_custom (corne_left nice_oled + CONFIG_NICE_CUSTOM_ON=y) | ✅ Pass | 294,636 B (36.3%) | 84,816 B (32.4%) | Uses nice_oled hardware since nice_custom is a "blank slate" config |
-| nice_oled_raw_hid (corne_left nice_oled + raw_hid.conf) | ✅ Pass | 297,544 B (36.7%) | 86,288 B (32.9%) | Clean build |
-
-**Build fixes applied during smoke testing:**
-1. Added missing `#include "util.h"` in screen.h, screen_peripheral.h, battery.c, layer.c, profile.c, output.c
-2. Fixed dirty mask references: `widget->central.dirty` → `widget->compositor.dirty` (7 occurrences)
-3. Added font include in screen_central.c for pixel_operator_mono_16 declaration
-4. Fixed RAW HID header path in protocol_types.h
-5. Fixed event header include in screen.c (`<zmk/events/raw_hid.h>` → `<raw_hid/hid.h>`)
-6. Added `#include <zephyr/kernel.h>` to raw_hid_label.c for IS_ENABLED() macro
-7. Replaced strtok with manual strchr-based parsing (C99 +nostdinc compatibility)
-
-**nice_custom fix:** Modified CI workflow to use `corne_left nice_oled` shield instead of `corne_left nice_view_adapter nice_custom`. The nice_custom shield is a "blank slate" configuration that requires user-defined overlays, so testing with nice_oled hardware verifies the module compiles correctly with CONFIG_NICE_CUSTOM_ON=y enabled.
+4. Re-baseline and re-document
+   - update memory numbers after each material render-path change
+   - keep this tracker aligned with code after each completed task
 
 ---
 
-## Notes
+## Progress Snapshot
 
-- All code changes verified via smoke builds on 3 of 4 targets
-- nice_custom failure is a pre-existing issue unrelated to refactor changes
-- Two-stage review per task: spec compliance → code quality
+- `Verified complete:` 9 major task areas
+- `Partial:` 2 major task areas
+- `Reopened:` 1 major task area
+- `Additional uncovered gaps:` 4
+
+**Bottom line:** the refactor is real and valuable, but it is not finished. Use this tracker as the source of truth instead of the earlier “12/12 complete” claim.

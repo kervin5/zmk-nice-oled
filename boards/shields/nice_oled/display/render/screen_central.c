@@ -7,6 +7,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include "../model/central_state.h"
 #include "../model/dirty_domains.h"
+#include "central_draw_compat.h"
 #include "screen_common.h"
 #include "../../widgets/util.h"
 #include "../../include/fonts.h"
@@ -16,14 +17,30 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../../widgets/wpm.h"
 #include "../../widgets/profile.h"
 
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL) ||                   \
+    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ONLY) ||                  \
+    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
 /* Forward declarations — draw helpers moved from screen.c */
 static void draw_battery_text_central(lv_obj_t *canvas, const struct nice_oled_central_state *state);
+#endif
 
-/* Canvas orchestration */
+/* Central compositor responsibilities:
+ * - background
+ * - output/profile canvas chrome
+ * - central battery image/text rendering
+ * - optional layer and canvas WPM rendering
+ * Persistent widgets own RAW HID labels and animation-only LVGL objects.
+ */
 static void draw_canvas_central(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     draw_background(canvas);
     draw_output_status(canvas, state);
+#if !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL) &&                  \
+    !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ONLY) &&                 \
+    !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
+    draw_battery_status(canvas, state);
+#else
     draw_battery_text_central(canvas, state);
+#endif
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM)
     draw_wpm_status(canvas, state);
 #endif
@@ -50,8 +67,13 @@ int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *p
         return -1;
     }
 
-    /* Wire the canvas to its pixel buffer — square buffer matches main branch coordinate system */
+#if IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
+    /* Native portrait panels render directly into the visible canvas size. */
+    lv_canvas_set_buffer(comp->canvas, cbuf, CANVAS_WIDTH, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+#else
+    /* Legacy central layout still presents through the square rotation buffer. */
     lv_canvas_set_buffer(comp->canvas, cbuf, CANVAS_HEIGHT, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
+#endif
 
     comp->initialized = true;
     return 0;
@@ -63,8 +85,10 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
     }
     draw_canvas_central(comp->canvas, comp->central_state);
 
-    /* Always rotate — matches main branch behavior */
+#if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
+    /* Legacy compatibility path: rotate the square canvas into portrait orientation. */
     rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf);
+#endif
 }
 
 /* ========================================================================
@@ -73,6 +97,9 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
  * The old widget headers still declare non-static versions for external callers.
  * ======================================================================== */
 
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL) ||                   \
+    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ONLY) ||                  \
+    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_AND_CENTRAL)
 /* draw_battery_text_central — renamed from draw_battery_text (screen.c:63-120) */
 static void draw_battery_text_central(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     char text[32] = "";
@@ -119,7 +146,6 @@ static void draw_battery_text_central(lv_obj_t *canvas, const struct nice_oled_c
     }
 #endif
 
-    lv_canvas_draw_text(canvas, 0, 19, lv_obj_get_width(canvas), &label_dsc, text);
+    nice_oled_central_draw_text_compat(canvas, 0, 19, lv_obj_get_width(canvas), &label_dsc, text);
 }
-
-
+#endif

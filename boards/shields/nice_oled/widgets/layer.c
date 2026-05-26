@@ -1,5 +1,6 @@
 #include "layer.h"
 #include "util.h"
+#include "../display/render/central_draw_compat.h"
 #include <fonts.h>
 #include <zephyr/kernel.h>
 
@@ -23,7 +24,10 @@ void draw_layer_status(lv_obj_t *canvas, const struct nice_oled_central_state *s
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RESPONSIVE_BONGO_CAT)
     lv_draw_rect_dsc_t rect_bg_dsc;
     init_rect_dsc(&rect_bg_dsc, LVGL_BACKGROUND);
-    lv_canvas_draw_rect(canvas, 0, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y - 2, 68, 19, &rect_bg_dsc);
+    nice_oled_central_draw_rect_compat(canvas, 0, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y - 2, 68,
+                                       19, &rect_bg_dsc);
 #endif
-    lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y, 68, &label_dsc, text);
+    nice_oled_central_draw_text_compat(canvas, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X,
+                                       CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y, 68, &label_dsc,
+                                       text);
 }

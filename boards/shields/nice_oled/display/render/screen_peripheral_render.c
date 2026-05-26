@@ -8,10 +8,22 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../model/peripheral_state.h"
 #include "screen_common.h"
 #include "../../widgets/util.h"
+#include "../../widgets/output.h"
 
-/* Canvas orchestration — peripheral only draws background (no output/battery/profile on peripheral) */
-static void draw_canvas_peripheral(lv_obj_t *canvas) {
+void draw_peripheral_battery_status(lv_obj_t *canvas,
+                                    const struct nice_oled_peripheral_state *state);
+
+/* Peripheral compositor responsibilities:
+ * - background
+ * - peripheral connection canvas chrome
+ * - peripheral battery image/text rendering
+ * Persistent widgets own sleep art and animation-only LVGL objects.
+ */
+static void draw_canvas_peripheral(lv_obj_t *canvas,
+                                   const struct nice_oled_peripheral_state *state) {
     draw_background(canvas);
+    draw_peripheral_connection_status(canvas, state);
+    draw_peripheral_battery_status(canvas, state);
 }
 
 int nice_oled_screen_peripheral_init(struct nice_oled_compositor *comp, lv_obj_t *parent, void *cbuf) {
@@ -37,10 +49,10 @@ int nice_oled_screen_peripheral_init(struct nice_oled_compositor *comp, lv_obj_t
 }
 
 void nice_oled_screen_peripheral_redraw(struct nice_oled_compositor *comp) {
-    if (!comp || !comp->initialized || !comp->canvas) {
+    if (!comp || !comp->initialized || !comp->canvas || !comp->peripheral_state) {
         return;
     }
-    draw_canvas_peripheral(comp->canvas);
+    draw_canvas_peripheral(comp->canvas, comp->peripheral_state);
 
 #if !IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
     /* Rotate canvas for portrait orientation — matches main branch behavior */

@@ -19,3 +19,5 @@ struct peripheral_status_state {
 #endif
 
 void draw_output_status(lv_obj_t *canvas, const struct nice_oled_central_state *state);
+void draw_peripheral_connection_status(lv_obj_t *canvas,
+                                       const struct nice_oled_peripheral_state *state);

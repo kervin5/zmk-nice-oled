@@ -1,5 +1,6 @@
 #include "wpm.h"
 #include "util.h"
+#include "../display/render/central_draw_compat.h"
 // #include "../assets/custom_fonts.h"
 #include <math.h>
 #include <zephyr/kernel.h>
@@ -19,7 +20,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    lv_canvas_draw_img(canvas, 0, 65, &grid, &img_dsc);
+    nice_oled_central_draw_img_compat(canvas, 0, 65, &grid, &img_dsc);
 }
 
 static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
@@ -66,7 +67,7 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
     }
 #endif
 
-    lv_canvas_draw_line(canvas, points, 10, &line_dsc);
+    nice_oled_central_draw_line_compat(canvas, points, 10, &line_dsc);
 }
 #endif // RAW_HID && !LUNA && !BONGO_CAT && !FIXED
 
@@ -93,7 +94,8 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
 
     lv_draw_label_dsc_t label_left_dsc;
     init_label_dsc(&label_left_dsc, LVGL_FOREGROUND, DRAW_LABEL_FONTS, LV_TEXT_ALIGN_LEFT);
-    lv_canvas_draw_text(canvas, 0, DRAW_LABEL_WMP_Y, 25, &label_left_dsc, DRAW_LABEL_WMP);
+    nice_oled_central_draw_text_compat(canvas, 0, DRAW_LABEL_WMP_Y, 25, &label_left_dsc,
+                                       DRAW_LABEL_WMP);
 
     lv_draw_label_dsc_t label_dsc_wpm;
     init_label_dsc(&label_dsc_wpm, LVGL_FOREGROUND, DRAW_LABEL_FONTS, DRAW_LABEL_TEXT_ALIGN);
@@ -101,7 +103,8 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
     char wpm_text[6] = {};
 
     snprintf(wpm_text, sizeof(wpm_text), "%d", state->wpm[9]);
-    lv_canvas_draw_text(canvas, DRAW_LABEL_WMP_X, DRAW_LABEL_WMP_Y, 42, &label_dsc_wpm, wpm_text);
+    nice_oled_central_draw_text_compat(canvas, DRAW_LABEL_WMP_X, DRAW_LABEL_WMP_Y, 42,
+                                       &label_dsc_wpm, wpm_text);
 }
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
 
@@ -110,7 +113,9 @@ static void draw_gauge(lv_obj_t *canvas, const struct nice_oled_central_state *s
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    lv_canvas_draw_img(canvas, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_Y, &gauge, &img_dsc);
+    nice_oled_central_draw_img_compat(canvas, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_X,
+                                      CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_Y, &gauge,
+                                      &img_dsc);
 }
 
 static void draw_needle(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
@@ -158,7 +163,7 @@ static void draw_needle(lv_obj_t *canvas, const struct nice_oled_central_state *
 
     lv_point_t points[2] = {{needleStartX, needleStartY}, {needleEndX, needleEndY}};
     // canvas, points, number of points, line_dsc
-    lv_canvas_draw_line(canvas, points, 2, &line_dsc);
+    nice_oled_central_draw_line_compat(canvas, points, 2, &line_dsc);
     // lv_canvas_draw_line(canvas, points, 2, &line_dsc);
 }
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
@@ -172,7 +177,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
-    lv_canvas_draw_img(canvas, -1, 95, &grid, &img_dsc);
+    nice_oled_central_draw_img_compat(canvas, -1, 95, &grid, &img_dsc);
 }
 
 static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
@@ -222,7 +227,7 @@ static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *s
     }
 #endif
 
-    lv_canvas_draw_line(canvas, points, 10, &line_dsc);
+    nice_oled_central_draw_line_compat(canvas, points, 10, &line_dsc);
 }
 #endif
 

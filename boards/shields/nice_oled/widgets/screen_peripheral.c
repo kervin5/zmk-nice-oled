@@ -66,14 +66,12 @@ static void set_battery_status(struct zmk_widget_screen *widget,
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_SMART_BATTERY)
     if (widget->peripheral.charging) {
-        // mostrar
-        // lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_HIDDEN);
-        animation_smart_battery_on(widget->obj);
+        animation_smart_battery_on(widget->obj, &widget->smart_battery_anim,
+                                   &widget->smart_battery_static);
 
     } else {
-        // quitar
-        // lv_obj_add_flag(widget->art, LV_OBJ_FLAG_HIDDEN);
-        animation_smart_battery_off(widget->obj);
+        animation_smart_battery_off(widget->obj, &widget->smart_battery_anim,
+                                    &widget->smart_battery_static);
     }
 #endif
 }
@@ -139,6 +137,8 @@ ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
+    widget->smart_battery_anim = NULL;
+    widget->smart_battery_static = NULL;
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
     nice_oled_peripheral_state_init(&widget->peripheral);
 
