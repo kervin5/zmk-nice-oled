@@ -215,6 +215,21 @@ These are real code issues not represented clearly enough in the earlier tracker
 - Render ownership is still mixed: widgets, label listeners, and compositors all participate in presentation logic. Future work should consolidate presentation decisions into the compositor layer.
 - Tracker baseline numbers have been reconciled to current verified values (FLASH 36.47%, RAM 42.12% central; FLASH 31.05%, RAM 35.04% peripheral).
 
+## Code Quality Review Findings (Post-Implementation)
+
+A code quality review was performed after all recovery tasks were implemented and committed. The following issues were found and fixed:
+
+### Critical Fix
+- **`usb_hid.c`: Semaphore leak** — `k_sem_give(&hid_sem)` was only called in the error path, causing deadlock after first successful RAW HID send. Fixed by moving `k_sem_give()` outside the error conditional. *(Pre-existing bug, discovered during review)*
+
+### Important Fix
+- **`raw_hid_label.c`: Buffer overflow via `strcpy`** — `layouts_config` was sized to the compile-time string literal length; long Kconfig values could overflow adjacent static variables. Fixed by using a fixed 64-byte buffer with `strncpy`. Also removed duplicate layout parsing logic (was parsed twice in same function).
+
+### Minor Notes (No Action Required)
+- `screen_central.c`: `draw_battery_text_central` uses 32-byte buffer for split battery levels — currently safe for CONFIG_NICE_OLED_SPLIT_TOTAL_DEVICES ≤ 4, but could overflow with more peripherals. Monitor if config changes.
+- `battery.c`: `animation_smart_battery_on/off()` functions have no callers in current codebase — dead code reserved for future use.
+- `screen_common.h`: `static inline` in header is valid C; negligible impact on binary size.
+
 ---
 
 ## Progress Snapshot
