@@ -1107,7 +1107,7 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
 static void set_output_status(struct zmk_widget_screen *widget,
                               const struct output_status_state *state) {
-    bool endpoint_changed = (memcmp(&widget->state.selected_endpoint, state->selected_endpoint,
+    bool endpoint_changed = (memcmp(&widget->state.selected_endpoint, &state->selected_endpoint,
                                     sizeof(struct zmk_endpoint_instance)) != 0);
     bool profile_idx_changed = (widget->state.active_profile_index != state->active_profile_index);
     bool profile_conn_changed = (widget->state.active_profile_connected != state->active_profile_connected);
