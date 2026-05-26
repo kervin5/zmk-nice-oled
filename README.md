@@ -314,8 +314,6 @@ When using `SYMBOL` style, the following real icons are displayed:
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `CONFIG_NICE_OLED_WIDGET_LAYER` | bool | `y` | Enable layer widget |
-| `CONFIG_NICE_OLED_WIDGET_LAYER_ANIMATION_MS` | int | `250` (OLED), `300` (ePaper) | Layer transition animation duration in ms (100–500) |
-| `CONFIG_NICE_OLED_WIDGET_LAYER_COLOR_FLASH` | bool | `y` | Enable background color flash on layer change |
 | `CONFIG_NICE_OLED_WIDGET_PROFILE_BIG` | bool | `n` | Enable show widget profile bigger |
 | `CONFIG_NICE_OLED_WIDGET_CENTRAL` | bool | `n` | Enable test widget on central |
 
