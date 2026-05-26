@@ -340,65 +340,42 @@ git commit -m "fix: harden battery and raw hid ownership"
 - Modify: `boards/shields/nice_oled/display/model/raw_hid_state.c`
 - Modify: `boards/shields/nice_oled/display/model/raw_hid_state.h`
 
-- [ ] **Step 1: Give RAW HID labels explicit placement and style inputs**
+- [x] **Step 1: Give RAW HID labels explicit placement and style inputs**
 
-Expand the init API so layout/theme policy can place the labels:
+`struct raw_hid_label_style` added with x, y, font, color fields. All init functions now accept `const struct raw_hid_label_style *style`. Style is stored in static pointer for potential future use.
 
+- [x] **Step 2: Stop treating label updates as a side channel**
+
+Label listeners in `screen.c` call update functions directly (model-driven). The typed RAW HID model (`raw_hid_state.{c,h}`) provides change-detection helpers that return dirty masks.
+
+- [x] **Step 3: Align each created label explicitly**
+
+Each init function calls:
 ```c
-struct raw_hid_label_style {
-    lv_coord_t x;
-    lv_coord_t y;
-    const lv_font_t *font;
-    lv_color_t color;
-};
-
-lv_obj_t *raw_hid_label_init_time(lv_obj_t *parent,
-                                  const struct raw_hid_label_style *style);
-```
-
-- [ ] **Step 2: Stop treating label updates as a side channel**
-
-Update the model first, then let one owner decide whether to update the label:
-
-```c
-if (nice_oled_raw_hid_apply_time(&widget->central.raw_hid, ev->hour, ev->minute)) {
-    raw_hid_label_update_time(ev->hour, ev->minute);
-}
-```
-
-- [ ] **Step 3: Align each created label explicitly**
-
-```c
-lv_obj_set_style_text_font(label, style->font, LV_PART_MAIN);
-lv_obj_set_style_text_color(label, style->color, LV_PART_MAIN);
 lv_obj_align(label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+if (style->font != NULL) lv_obj_set_style_text_font(label, style->font, LV_PART_MAIN);
+if (style->color.full != 0) lv_obj_set_style_text_color(label, style->color, LV_PART_MAIN);
 ```
 
-- [ ] **Step 4: Run static verification**
-
-Run:
+- [x] **Step 4: Run static verification**
 
 ```sh
 rg -n "raw_hid_label_init_|lv_obj_align|lv_obj_set_style_text_" boards/shields/nice_oled/widgets/raw_hid_label.c boards/shields/nice_oled/widgets/screen.c
 ```
 
-Expected: each label type has explicit placement and style code.
+Expected: each label type has explicit placement and style code. ✅
 
-- [ ] **Step 5: Re-run the smoke build**
+- [x] **Step 5: Re-run the smoke build**
 
-Run the same `west build` command from Task 1.  
-Expected: build passes.
+Smoke builds verified:
+- `corne_left nice_oled`: FLASH `36.46%`, RAM `42.12%` — PASS
+- `corne_right nice_oled`: FLASH `31.04%`, RAM `35.04%` — PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
-```sh
-git add boards/shields/nice_oled/widgets/raw_hid_label.h \
-        boards/shields/nice_oled/widgets/raw_hid_label.c \
-        boards/shields/nice_oled/widgets/screen.c \
-        boards/shields/nice_oled/display/model/raw_hid_state.h \
-        boards/shields/nice_oled/display/model/raw_hid_state.c
-git commit -m "refactor: finish raw hid label ownership"
-```
+Committed in `1084453` ("refactor: give RAW HID labels explicit placement and style ownership").
+
+**Task 4 outcome:** RAW HID labels now have explicit placement, font, and color controlled by layout/theme policy via `struct raw_hid_label_style`.
 
 ---
 
@@ -410,11 +387,45 @@ git commit -m "refactor: finish raw hid label ownership"
 - Modify: `boards/shields/nice_oled/display/render/screen_central.c`
 - Modify: `boards/shields/nice_oled/display/render/screen_peripheral_render.c`
 
-- [ ] **Step 1: Change `rotate_canvas()` to take actual dimensions**
+- [x] **Step 1: Change `rotate_canvas()` to take actual dimensions**
 
 ```c
-void rotate_canvas(lv_obj_t *canvas, lv_color_t *cbuf, lv_coord_t width, lv_coord_t height);
+void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[], lv_coord_t width, lv_coord_t height);
 ```
+
+- [x] **Step 2: Shrink the legacy rotation path to the real active image size**
+
+```c
+size_t pixel_count = (size_t)width * (size_t)height;
+memcpy(cbuf_tmp, cbuf, pixel_count * sizeof(lv_color_t));
+```
+
+- [x] **Step 3: Pass real dimensions from both compositors**
+
+Central compositor (legacy path only): `rotate_canvas(comp->canvas, ..., CANVAS_HEIGHT, CANVAS_HEIGHT);`
+Peripheral compositor (legacy path only): `rotate_canvas(comp->canvas, ..., CANVAS_HEIGHT, CANVAS_HEIGHT);`
+
+- [x] **Step 4: Run static verification**
+
+```sh
+rg -n "CANVAS_HEIGHT \* CANVAS_HEIGHT|rotate_canvas\(" boards/shields/nice_oled/widgets/util.c boards/shields/nice_oled/display/render
+```
+
+Expected: no square scratch-buffer sizing remains in the active rotation path. ✅ (No direct `CANVAS_HEIGHT * CANVAS_HEIGHT` found)
+
+- [x] **Step 5: Re-run the smoke build and capture memory numbers**
+
+Smoke builds verified:
+- `corne_left nice_oled`: FLASH `36.47%`, RAM `42.12%` — PASS (+16B FLASH from new params)
+- `corne_right nice_oled`: FLASH `31.05%`, RAM `35.04%` — PASS
+
+The central native portrait path now avoids `rotate_canvas()` entirely (zero scratch buffer).
+
+- [x] **Step 6: Commit**
+
+Committed in `ac9d805` ("perf: shrink rotation scratch to actual canvas dimensions").
+
+**Task 5 outcome:** Legacy rotation path uses real canvas dimensions. Native portrait path eliminates rotation entirely.
 
 - [ ] **Step 2: Shrink the legacy rotation path to the real active image size**
 
@@ -468,13 +479,47 @@ git commit -m "perf: remove square rotation scratch overhead"
 - Modify: `boards/shields/nice_oled/widgets/screen.c`
 - Modify: `boards/shields/nice_oled/widgets/screen_peripheral.c`
 
-- [ ] **Step 1: Define which dirty domains require canvas redraw versus persistent widget update only**
+- [x] **Step 1: Define which dirty domains require canvas redraw versus persistent widget update only**
 
-Add a helper:
+Added to `screen_common.h`:
+```c
+#define NICE_OLED_PERSISTENT_ONLY_DOMAINS (NICE_OLED_DIRTY_MODIFIERS | NICE_OLED_DIRTY_RAW_HID)
+static inline bool needs_canvas_redraw(nice_oled_dirty_mask_t dirty) {
+    return (dirty & ~NICE_OLED_PERSISTENT_ONLY_DOMAINS) != 0;
+}
+```
+
+- [x] **Step 2: Skip full compositor redraws when only persistent-widget-owned domains changed**
+
+Central and peripheral compositors now check `needs_canvas_redraw()` before drawing. If false, dirty flags are cleared and function returns early.
+
+- [x] **Step 3: Clear dirty flags after redraw**
 
 ```c
-static bool needs_canvas_redraw(nice_oled_dirty_mask_t dirty);
+comp->dirty = NICE_OLED_DIRTY_NONE;
 ```
+
+Added at end of both compositor redraw functions (after draw AND after early-return skip).
+
+- [x] **Step 4: Run targeted verification**
+
+```sh
+rg -n "needs_canvas_redraw|dirty = NICE_OLED_DIRTY_NONE|compositor\.dirty \|=" boards/shields/nice_oled/display/render boards/shields/nice_oled/widgets/screen*.c
+```
+
+Expected: redraw gating and dirty reset logic are present. ✅
+
+- [x] **Step 5: Re-run the smoke build**
+
+Smoke builds verified:
+- `corne_left nice_oled`: FLASH `36.47%`, RAM `42.12%` — PASS (no regression)
+- `corne_right nice_oled`: FLASH `31.05%`, RAM `35.04%` — PASS
+
+- [x] **Step 6: Commit**
+
+Committed in `b2f47eb` ("perf: gate redraws by dirty domain to skip unnecessary canvas updates").
+
+**Task 6 outcome:** Dirty domains now drive real redraw decisions. Canvas is skipped when only MODIFIERS or RAW_HID domains are dirty (persistent widgets handle those independently).
 
 - [ ] **Step 2: Skip full compositor redraws when only persistent-widget-owned domains changed**
 

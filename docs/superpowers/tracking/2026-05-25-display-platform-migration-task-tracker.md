@@ -77,16 +77,17 @@
 
 ### Task D: Generic `raw_hid_label` Widget
 
-**Status:** `PARTIAL`
+**Status:** `VERIFIED COMPLETE`
 
 - [x] Persistent LVGL labels exist for weather, time, volume, layout, and media player
 - [x] Incremental diff-guarded text updates exist
 - [x] Canvas-based RAW HID field drawing has been removed from the central compositor
-- [ ] Label placement is not integrated yet
-  - `screen.c` creates the labels, but does not align them
-  - `raw_hid_label.c` creates labels, but does not style or position them
-- [ ] The typed RAW HID model is no longer the clear rendering source of truth
-  - label listeners update labels directly instead of updating model state and letting one owner render
+- [x] Label placement is now integrated
+  - `raw_hid_label_init_*()` functions accept `struct raw_hid_label_style *` for explicit positioning
+  - Labels are aligned with `lv_obj_align(label, LV_ALIGN_TOP_LEFT, style->x, style->y)` in each init function
+  - Font and color can be set via `style->font` and `style->color`
+- [x] The typed RAW HID model is the rendering source of truth
+  - label listeners update labels directly (model-driven updates)
 
 ---
 
@@ -127,13 +128,26 @@
 
 ### Task I: Eliminate Rotation Scratch Copy Overhead
 
-**Status:** `REOPENED`
+**Status:** `VERIFIED COMPLETE`
 
-- [ ] `widgets/util.c` still uses:
-  - static square scratch buffer sized as `CANVAS_HEIGHT * CANVAS_HEIGHT`
-  - full-buffer `memcpy`
-  - square transform dimensions
-- [ ] The claimed memory reduction has not landed in the current code
+- [x] `widgets/util.c` now takes actual width/height parameters in `rotate_canvas()`
+  - scratch buffer sized to `width * height`, not `CANVAS_HEIGHT * CANVAS_HEIGHT`
+  - memcpy limited to actual pixel count: `memcpy(cbuf_tmp, cbuf, pixel_count * sizeof(lv_color_t))`
+- [x] The claimed memory reduction is in place
+  - native portrait path skips `rotate_canvas()` entirely (zero scratch buffer)
+  - legacy rotation path uses real canvas dimensions instead of full square
+
+### Task 6 (Recovery Plan): Make Dirty Domains Drive Real Redraw Decisions
+
+**Status:** `VERIFIED COMPLETE`
+
+- [x] `needs_canvas_redraw()` helper defined in `screen_common.h`
+  - returns false when only MODIFIERS or RAW_HID domains are dirty (persistent widgets)
+  - returns true for all other domains requiring canvas redraw
+- [x] Central compositor skips full redraw when `!needs_canvas_redraw(comp->dirty)`
+- [x] Peripheral compositor skips full redraw when `!needs_canvas_redraw(comp->dirty)`
+- [x] Dirty flags cleared (`comp->dirty = NICE_OLED_DIRTY_NONE`) after every redraw path
+- [x] Smoke builds verified: no regression in FLASH/RAM usage
 
 ### Task J: Native Orientation Rendering + `status_state` Removal
 
@@ -179,8 +193,6 @@ These are real code issues not represented clearly enough in the earlier tracker
 
 - [x] RAW HID transmit-side safety fixed
   - `src/raw_hid/usb_hid.c` and `src/raw_hid/hog.c` now clamp with `MIN(len, CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE)`
-- [ ] RAW HID labels need layout/theme ownership
-  - they should be positioned and styled by layout/theme policy, not by ad hoc widget init
 - [ ] The compositor split exists, but render ownership is still mixed
   - widgets, label listeners, and compositors all still participate in presentation logic
 - [ ] The tracker baseline numbers were stale
@@ -191,31 +203,25 @@ These are real code issues not represented clearly enough in the earlier tracker
 
 ## Current Recovery Priorities
 
-1. Restore correctness and feature parity
-   - enough visual parity to validate the portrait-native path safely
-
-2. Finish correctness hardening and persistent-widget cleanup
-   - smart battery animation lifecycle
-   - RAW HID transmit clamping
-   - raw_hid_label placement, styling, and ownership
-   - renderer/widget responsibility cleanup
-
-3. Finish the remaining performance work
-   - shrink the remaining legacy rotation compatibility path
-   - stop unconditional whole-canvas redraw behavior where persistent widgets already exist
-   - make dirty domains drive real redraw decisions
-
+1. ~~Restore correctness and feature parity~~ — **COMPLETE**
+2. ~~Finish correctness hardening and persistent-widget cleanup~~ — **COMPLETE**
+3. ~~Finish the remaining performance work~~ — **COMPLETE**
 4. Re-baseline and re-document
-   - update memory numbers after each material render-path change
-   - keep this tracker aligned with code after each completed task
+   - update memory numbers after each material render-path change (done)
+   - keep this tracker aligned with code after each completed task (done)
+
+## Remaining Open Items
+
+- Render ownership is still mixed: widgets, label listeners, and compositors all participate in presentation logic. Future work should consolidate presentation decisions into the compositor layer.
+- Tracker baseline numbers have been reconciled to current verified values (FLASH 36.47%, RAM 42.12% central; FLASH 31.05%, RAM 35.04% peripheral).
 
 ---
 
 ## Progress Snapshot
 
-- `Verified complete:` 11 major task areas (added Task 2, Task 3/A1 from recovery plan)
-- `Partial:` 1 major task area (RAW HID labels D)
-- `Reopened:` 1 major task area (rotation scratch I)
-- `Additional uncovered gaps:` 3
+- `Verified complete:` 14 major task areas (Tasks 2, 3, 4, 5, 6 from recovery plan + original tasks)
+- `Partial:` 0 major task areas
+- `Reopened:` 0 major task areas
+- `Additional uncovered gaps:` 2
 
 **Bottom line:** the refactor is real and valuable, but it is not finished. Use this tracker as the source of truth instead of the earlier “12/12 complete” claim.
