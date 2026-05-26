@@ -215,6 +215,8 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 static void redraw_modifiers_region(struct zmk_widget_screen *widget) {
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     draw_mods_status(canvas, &widget->state);
+    // Invalidate rotate cache since we modified cbuf directly (bypassing draw_canvas)
+    cbuf_cached = false;
 }
 #endif
 
@@ -754,7 +756,7 @@ static void hid_time_update_cb(struct time_notification time) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         if (widget->state.hour == time.hour && widget->state.minute == time.minute) {
-            return;
+            continue;
         }
         widget->state.hour = time.hour;
         widget->state.minute = time.minute;
@@ -780,7 +782,7 @@ static void hid_volume_update_cb(struct volume_notification volume) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         if (widget->state.volume == volume.value) {
-            return;
+            continue;
         }
         widget->state.volume = volume.value;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
@@ -806,7 +808,7 @@ static void hid_layout_update_cb(struct layout_notification layout) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         if (widget->state.layout == layout.value) {
-            return;
+            continue;
         }
         widget->state.layout = layout.value;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
@@ -827,7 +829,7 @@ static void weather_status_update_cb(struct weather_notification weather) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
         if (widget->state.temperature == weather.temperature) {
-            return;
+            continue;
         }
         widget->state.temperature = weather.temperature;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
