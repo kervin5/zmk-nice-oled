@@ -250,6 +250,27 @@
 
 ---
 
+## Post-Review Fixes (Verification-before-completion pass)
+
+### Critical fixes from code review:
+
+- [x] Added ZMK event listeners in `screen.c` to bridge RAW HID notifications → raw_hid_label_update_*
+  - `raw_hid_weather_listener`, `raw_hid_time_listener`, `raw_hid_volume_listener`
+  - `raw_hid_layout_listener`, `raw_hid_spotify_listener`
+  - Each listener calls the corresponding `raw_hid_label_update_*()` function
+  
+- [x] Fixed CMakeLists.txt: moved `raw_hid_label.c` from `CONFIG_NICE_OLED_WIDGET_LAYER` block to `CONFIG_NICE_OLED_WIDGET_RAW_HID` block
+
+- [x] Removed dead code: deleted `model_bridge.c` and `model_bridge.h` (never called, wasted flash)
+  - Also removed reference from CMakeLists.txt
+
+### Important fixes from code review:
+
+- [x] Simplified layout diff guard in `raw_hid_label.c` — removed redundant dual-condition logic
+- [x] Removed unused `enum raw_hid_field_type` from `raw_hid_label.h`
+
+---
+
 ## Notes
 
 - Smoke builds require `west` tool and ZMK build environment (not available in current session)

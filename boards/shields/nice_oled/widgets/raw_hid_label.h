@@ -3,15 +3,6 @@
 #include <lvgl.h>
 #include <stdint.h>
 
-/* Field types that raw_hid_label can display */
-enum raw_hid_field_type {
-    RAW_HID_FIELD_WEATHER,
-    RAW_HID_FIELD_TIME,
-    RAW_HID_FIELD_VOLUME,
-    RAW_HID_FIELD_LAYOUT,
-    RAW_HID_FIELD_MEDIA_PLAYER,
-};
-
 /**
  * Initialize a persistent LVGL label for a RAW HID field.
  * Creates the label object on `parent` and returns it.

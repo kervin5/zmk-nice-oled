@@ -127,12 +127,7 @@ void raw_hid_label_update_layout(uint8_t layout_index, const char *layout_list) 
     }
 
     /* Skip update if index hasn't changed */
-    if (layout_index == s_last_layout_index && layout_list == NULL) {
-        return;
-    }
-
-    /* Only skip if index is the same and we have a custom list */
-    if (layout_index == s_last_layout_index && layout_list != NULL) {
+    if (layout_index == s_last_layout_index) {
         return;
     }
     s_last_layout_index = layout_index;

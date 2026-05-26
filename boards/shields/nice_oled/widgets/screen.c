@@ -118,10 +118,70 @@ static struct zmk_widget_modifiers modifiers_widget;
 
 #endif // CONFIG_NICE_OLED_WIDGET_RAW_HID
 
-/* Weather and Spotify labels — handled by raw_hid_label (persistent LVGL objects) */
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_WEATHER)
+/* RAW HID label listeners — bridge ZMK notifications to persistent LVGL labels */
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID)
+#include <zmk/events/raw_hid.h>
 #include "raw_hid_label.h"
+
+static int raw_hid_weather_listener(const zmk_event_t *eh) {
+    const struct weather_notification *ev = as_weather_notification(eh);
+    if (ev) {
+        raw_hid_label_update_weather(ev->temperature);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(raw_hid_weather, raw_hid_weather_listener);
+ZMK_SUBSCRIPTION(raw_hid_weather, weather_notification);
+
+static int raw_hid_time_listener(const zmk_event_t *eh) {
+    const struct time_notification *ev = as_time_notification(eh);
+    if (ev) {
+        raw_hid_label_update_time(ev->hour, ev->minute);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(raw_hid_time, raw_hid_time_listener);
+ZMK_SUBSCRIPTION(raw_hid_time, time_notification);
+
+static int raw_hid_volume_listener(const zmk_event_t *eh) {
+    const struct volume_notification *ev = as_volume_notification(eh);
+    if (ev) {
+        raw_hid_label_update_volume(ev->value);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(raw_hid_volume, raw_hid_volume_listener);
+ZMK_SUBSCRIPTION(raw_hid_volume, volume_notification);
+
+#ifdef CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT
+static int raw_hid_layout_listener(const zmk_event_t *eh) {
+    const struct layout_notification *ev = as_layout_notification(eh);
+    if (ev) {
+        raw_hid_label_update_layout(ev->value, NULL);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(raw_hid_layout, raw_hid_layout_listener);
+ZMK_SUBSCRIPTION(raw_hid_layout, layout_notification);
 #endif
+
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_SPOTIFY_MACOS)
+static int raw_hid_spotify_listener(const zmk_event_t *eh) {
+    const struct spotify_notification *ev = as_spotify_notification(eh);
+    if (ev) {
+        raw_hid_label_update_media_player(ev->media_player);
+    }
+    return ZMK_EV_EVENT_BUBBLE;
+}
+
+ZMK_LISTENER(raw_hid_spotify, raw_hid_spotify_listener);
+ZMK_SUBSCRIPTION(raw_hid_spotify, spotify_notification);
+#endif
+#endif // CONFIG_NICE_OLED_WIDGET_RAW_HID
 
 /**
  * hid indicators
