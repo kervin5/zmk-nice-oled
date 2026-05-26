@@ -707,11 +707,12 @@ static struct is_connected_notification get_is_hid_connected(const zmk_event_t *
 }
 
 static void hid_is_connected_update_cb(struct is_connected_notification is_connected) {
-    // Actualiza el estado en *todos* los widgets de pantalla y redibuja
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (widget->state.is_connected == is_connected.value) {
+            return;
+        }
         widget->state.is_connected = is_connected.value;
-        // Llama a la función principal de dibujo para actualizar toda la pantalla
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
@@ -733,6 +734,9 @@ static struct time_notification get_time(const zmk_event_t *eh) {
 static void hid_time_update_cb(struct time_notification time) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (widget->state.hour == time.hour && widget->state.minute == time.minute) {
+            return;
+        }
         widget->state.hour = time.hour;
         widget->state.minute = time.minute;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
@@ -756,6 +760,9 @@ static struct volume_notification get_volume(const zmk_event_t *eh) {
 static void hid_volume_update_cb(struct volume_notification volume) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (widget->state.volume == volume.value) {
+            return;
+        }
         widget->state.volume = volume.value;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
@@ -779,6 +786,9 @@ static struct layout_notification get_layout(const zmk_event_t *eh) {
 static void hid_layout_update_cb(struct layout_notification layout) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (widget->state.layout == layout.value) {
+            return;
+        }
         widget->state.layout = layout.value;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
@@ -797,6 +807,9 @@ ZMK_SUBSCRIPTION(widget_layout, layout_notification);
 static void weather_status_update_cb(struct weather_notification weather) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (widget->state.temperature == weather.temperature) {
+            return;
+        }
         widget->state.temperature = weather.temperature;
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
@@ -821,6 +834,9 @@ ZMK_SUBSCRIPTION(widget_weather_status, weather_notification);
 static void spotify_status_update_cb(struct spotify_notification spotify) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
+        if (memcmp(widget->state.media_player, spotify.media_player, sizeof(widget->state.media_player)) == 0) {
+            return;
+        }
         memcpy(widget->state.media_player, spotify.media_player,
                sizeof(widget->state.media_player));
         draw_canvas(widget->obj, widget->cbuf, &widget->state);
@@ -905,11 +921,17 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 static void set_battery_status(struct zmk_widget_screen *widget,
                                struct battery_status_state state) {
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
-    widget->state.charging = state.usb_present;
-#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
+    bool charging_changed = (widget->state.charging != state.usb_present);
+    if (charging_changed) {
+        widget->state.charging = state.usb_present;
+    }
+#endif
 
+    uint8_t battery_changed = (widget->state.battery != state.level);
+    if (!battery_changed && !charging_changed) {
+        return;
+    }
     widget->state.battery = state.level;
-
     draw_canvas(widget->obj, widget->cbuf, &widget->state);
 }
 
@@ -945,6 +967,11 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 
 static void set_battery_status(struct zmk_widget_screen *widget, struct battery_state state) {
     if (state.source >= CONFIG_NICE_OLED_SPLIT_TOTAL_DEVICES) {
+        return;
+    }
+    bool level_changed = (widget->state.batteries[state.source].level != state.level);
+    bool usb_changed = (widget->state.batteries[state.source].usb_present != state.usb_present);
+    if (!level_changed && !usb_changed) {
         return;
     }
     LOG_DBG("Source: %d, level: %d, usb: %d", state.source, state.level, state.usb_present);
@@ -1016,6 +1043,11 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER)
 static void set_layer_status(struct zmk_widget_screen *widget, struct layer_status_state state) {
+    bool index_changed = (widget->state.layer_index != state.index);
+    const char *label_changed = (widget->state.layer_label != state.label);
+    if (!index_changed && !label_changed) {
+        return;
+    }
     widget->state.layer_index = state.index;
     widget->state.layer_label = state.label;
 
@@ -1044,6 +1076,14 @@ ZMK_SUBSCRIPTION(widget_layer_status, zmk_layer_state_changed);
 
 static void set_output_status(struct zmk_widget_screen *widget,
                               const struct output_status_state *state) {
+    bool endpoint_changed = (memcmp(&widget->state.selected_endpoint, state->selected_endpoint,
+                                    sizeof(struct zmk_endpoint_instance)) != 0);
+    bool profile_idx_changed = (widget->state.active_profile_index != state->active_profile_index);
+    bool profile_conn_changed = (widget->state.active_profile_connected != state->active_profile_connected);
+    bool profile_bonded_changed = (widget->state.active_profile_bonded != state->active_profile_bonded);
+    if (!endpoint_changed && !profile_idx_changed && !profile_conn_changed && !profile_bonded_changed) {
+        return;
+    }
     widget->state.selected_endpoint = state->selected_endpoint;
     widget->state.active_profile_index = state->active_profile_index;
     widget->state.active_profile_connected = state->active_profile_connected;
@@ -1083,6 +1123,9 @@ ZMK_SUBSCRIPTION(widget_output_status, zmk_ble_active_profile_changed);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM)
 static void set_wpm_status(struct zmk_widget_screen *widget, struct wpm_status_state state) {
+    if (widget->state.wpm[9] == state.wpm) {
+        return;
+    }
     for (int i = 0; i < 9; i++) {
         widget->state.wpm[i] = widget->state.wpm[i + 1];
     }
