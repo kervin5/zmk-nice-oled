@@ -531,7 +531,7 @@ config NICE_OLED_WIDGET_LAYER_CUSTOM_X
 config NICE_OLED_WIDGET_LAYER_CUSTOM_Y
     int "Layer widget Y position"
     default 60 if NICE_OLED_ON
-    default 146 if NICE_EPAPER_ON
+    default 60 if NICE_EPAPER_ON
     default 60
 
 ##}}}
@@ -540,13 +540,13 @@ config NICE_OLED_WIDGET_LAYER_CUSTOM_Y
 config NICE_OLED_WIDGET_BATTERY_CUSTOM_X
     int "Battery widget X position"
     default 3 if NICE_OLED_ON
-    default 26 if NICE_EPAPER_ON
+    default 3 if NICE_EPAPER_ON
     default 3
 
 config NICE_OLED_WIDGET_BATTERY_CUSTOM_Y
     int "Battery widget Y position"
     default 5 if NICE_OLED_ON
-    default 19 if NICE_EPAPER_ON
+    default 5 if NICE_EPAPER_ON
     default 50
 ##}}}
 
@@ -554,13 +554,13 @@ config NICE_OLED_WIDGET_BATTERY_CUSTOM_Y
 config NICE_OLED_WIDGET_PROFILE_CUSTOM_X
     int "Profile widget X position"
     default 0 if NICE_OLED_ON
-    default 18 if NICE_EPAPER_ON
+    default 0 if NICE_EPAPER_ON
     default 0
 
 config NICE_OLED_WIDGET_PROFILE_CUSTOM_Y
     int "Profile widget Y position"
     default 80 if NICE_OLED_ON
-    default 129 if NICE_EPAPER_ON
+    default 80 if NICE_EPAPER_ON
     default 80
 
 config NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_X
@@ -572,7 +572,7 @@ config NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_X
 config NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_Y
     int "Profile text Y position"
     default 80 if NICE_OLED_ON
-    default 32 if NICE_EPAPER_ON
+    default 80 if NICE_EPAPER_ON
     default 32
 ##}}}
 
@@ -580,37 +580,37 @@ config NICE_OLED_WIDGET_PROFILE_TEXT_CUSTOM_Y
 config NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_X
     int "Output USB icon X position"
     default 36 if NICE_OLED_ON
-    default 45 if NICE_EPAPER_ON
+    default 36 if NICE_EPAPER_ON
     default 36
 
 config NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y
     int "Output USB icon Y position"
     default 32 if NICE_OLED_ON
-    default 2 if NICE_EPAPER_ON
+    default 32 if NICE_EPAPER_ON
     default 34
 
 config NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X
     int "Output BT icon X position"
     default 4 if NICE_OLED_ON
-    default 49 if NICE_EPAPER_ON
+    default 4 if NICE_EPAPER_ON
     default 4
 
 config NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y
     int "Output BT icon Y position"
     default 32 if NICE_OLED_ON
-    default 0 if NICE_EPAPER_ON
+    default 32 if NICE_EPAPER_ON
     default 32
 
 config NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_X
     int "Output BT unbonded icon X position"
     default -1 if NICE_OLED_ON
-    default 44 if NICE_EPAPER_ON
+    default -1 if NICE_EPAPER_ON
     default -1
 
 config NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y
     int "Output BT unbonded icon Y position"
     default 32 if NICE_OLED_ON
-    default 0 if NICE_EPAPER_ON
+    default 32 if NICE_EPAPER_ON
     default 32
 ##}}}
 
@@ -624,7 +624,7 @@ config NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_X
 config NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_Y
     int "WPM gauge Y position"
     default 100 if NICE_OLED_ON
-    default 43 if NICE_EPAPER_ON
+    default 100 if NICE_EPAPER_ON
     default 70
 
 config NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_X
@@ -636,7 +636,7 @@ config NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_X
 config NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_Y
     int "WPM needle center Y position"
     default 105 if NICE_OLED_ON
-    default 66 if NICE_EPAPER_ON
+    default 105 if NICE_EPAPER_ON
     default 90
 
 config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X
@@ -648,7 +648,7 @@ config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X
 config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y
     int "WPM label Y position"
     default 75 if NICE_OLED_ON
-    default 103 if NICE_EPAPER_ON
+    default 135 if NICE_EPAPER_ON
     default 75
 ##}}}
 
@@ -656,13 +656,13 @@ config NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y
 config NICE_OLED_WIDGET_LUNA_CUSTOM_X
     int "Luna widget X position"
     default 22 if NICE_OLED_ON # 36 for a other good position
-    default 100 if NICE_EPAPER_ON
+    default 22 if NICE_EPAPER_ON
     default 22
 
 config NICE_OLED_WIDGET_LUNA_CUSTOM_Y
     int "Luna widget Y position"
     default 100 if NICE_OLED_ON
-    default 15 if NICE_EPAPER_ON
+    default 100 if NICE_EPAPER_ON
     default 0
 ##}}}
 
@@ -672,13 +672,13 @@ config NICE_OLED_WIDGET_LUNA_CUSTOM_Y
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_X
     int "Bongo cat widget X position"
     default 21 if NICE_OLED_ON # 33 for a other goot position
-    default 100 if NICE_EPAPER_ON
+    default 21 if NICE_EPAPER_ON
     default 21
 
 config NICE_OLED_WIDGET_BONGO_CAT_CUSTOM_Y
     int "Bongo cat widget Y position"
     default 95 if NICE_OLED_ON
-    default 8 if NICE_EPAPER_ON
+    default 95 if NICE_EPAPER_ON
     default -9
 ##}}}
 
@@ -688,15 +688,14 @@ config NICE_OLED_WIDGET_HID_INDICATORS_CUSTOM_X
     int "HID indicators widget X position"
     default 64 if NICE_OLED_ON && NICE_OLED_WIDGET_HID_INDICATORS_BONGO_CAT
     default 0 if NICE_OLED_ON
-    default 100 if NICE_EPAPER_ON
+    default 0 if NICE_EPAPER_ON
     default 0
 
 config NICE_OLED_WIDGET_HID_INDICATORS_CUSTOM_Y
     int "HID indicators widget Y position"
     default -9 if NICE_OLED_ON && NICE_OLED_WIDGET_HID_INDICATORS_BONGO_CAT
     default 148 if NICE_OLED_ON
-    default 15 if NICE_EPAPER_ON && !NICE_OLED_WIDGET_HID_INDICATORS_BONGO_CAT
-    default 8 if NICE_EPAPER_ON
+    default 148 if NICE_EPAPER_ON
     default 0
 ##}}}
 
@@ -704,13 +703,13 @@ config NICE_OLED_WIDGET_HID_INDICATORS_CUSTOM_Y
 config NICE_OLED_WIDGET_MODIFIERS_CUSTOM_X
     int "Modifiers widget X position"
     default 0 if NICE_OLED_ON
-    default 62 if NICE_EPAPER_ON
+    default 0 if NICE_EPAPER_ON
     default 62
 
 config NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y
     int "Modifiers widget Y position"
     default 100 if NICE_OLED_ON
-    default 62 if NICE_EPAPER_ON
+    default 100 if NICE_EPAPER_ON
     default 100
 ##}}}
 
@@ -718,13 +717,13 @@ config NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_X
     int "Animation peripheral X position"
     default 0 if NICE_OLED_ON
-    default 36 if NICE_EPAPER_ON
+    default 0 if NICE_EPAPER_ON
     default 0
 
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_Y
     int "Animation peripheral Y position"
     default 45 if NICE_OLED_ON
-    default 0 if NICE_EPAPER_ON
+    default 45 if NICE_EPAPER_ON
     default -18
 ##}}}
 
@@ -752,7 +751,7 @@ config NICE_OLED_WIDGET_RAW_HID_WEATHER_CUSTOM_X
 config NICE_OLED_WIDGET_RAW_HID_WEATHER_CUSTOM_Y
     int "Raw HID Weather Y position"
     default 100 if NICE_OLED_ON
-    default 62 if NICE_EPAPER_ON
+    default 100 if NICE_EPAPER_ON
     default 100
 
 # Time submodule
@@ -765,7 +764,7 @@ config NICE_OLED_WIDGET_RAW_HID_TIME_CUSTOM_X
 config NICE_OLED_WIDGET_RAW_HID_TIME_CUSTOM_Y
     int "Raw HID Time Y position"
     default 112 if NICE_OLED_ON
-    default 74 if NICE_EPAPER_ON
+    default 112 if NICE_EPAPER_ON
     default 74
 
 # Layout submodule
@@ -778,7 +777,7 @@ config NICE_OLED_WIDGET_RAW_HID_LAYOUT_CUSTOM_X
 config NICE_OLED_WIDGET_RAW_HID_LAYOUT_CUSTOM_Y
     int "Raw HID Layout Y position"
     default 136 if NICE_OLED_ON
-    default 86 if NICE_EPAPER_ON
+    default 136 if NICE_EPAPER_ON
     default 136
 
 # Volume submodule
@@ -791,7 +790,7 @@ config NICE_OLED_WIDGET_RAW_HID_VOLUME_CUSTOM_X
 config NICE_OLED_WIDGET_RAW_HID_VOLUME_CUSTOM_Y
     int "Raw HID Volume Y position"
     default 124 if NICE_OLED_ON
-    default 98 if NICE_EPAPER_ON
+    default 124 if NICE_EPAPER_ON
     default 124
 
 # Media Player (Spotify) submodule
@@ -804,7 +803,7 @@ config NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_CUSTOM_X
 config NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_CUSTOM_Y
     int "Raw HID Media Player Y position"
     default 148 if NICE_OLED_ON
-    default 110 if NICE_EPAPER_ON
+    default 148 if NICE_EPAPER_ON
     default 110
 ##}}}
 
@@ -818,7 +817,7 @@ config NICE_OLED_WIDGET_RESPONSIVE_BONGO_CAT_CUSTOM_X
 config NICE_OLED_WIDGET_RESPONSIVE_BONGO_CAT_CUSTOM_Y
     int "Responsive bongo cat widget Y position"
     default -9 if NICE_OLED_ON
-    default -9 if NICE_EPAPER_ON
+    default 95 if NICE_EPAPER_ON
     default -9
 ##}}}
 
