@@ -9,11 +9,7 @@
 LV_IMG_DECLARE(gauge);
 LV_IMG_DECLARE(grid);
 
-#if IS_ENABLED(CONFIG_NICE_EPAPER_ON)
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
-    !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
-#else
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
 static void draw_gauge(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
@@ -154,7 +150,6 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
 }
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
 
-#else // CONFIG_NICE_EPAPER_ON
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
 static void draw_gauge(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_img_dsc_t img_dsc;
@@ -295,7 +290,6 @@ static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *s
     }
 }
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-#endif // CONFIG_NICE_EPAPER_ON
 
 void draw_wpm_status(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     // Skip canvas draw when animation handles WPM display
@@ -306,16 +300,12 @@ void draw_wpm_status(lv_obj_t *canvas, const struct nice_oled_central_state *sta
     return;
 #endif
 
-#if IS_ENABLED(CONFIG_NICE_EPAPER_ON)
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
-    !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
-#else
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
     draw_gauge(canvas, state);
     draw_needle(canvas, state);
 #endif
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID) || !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
-#else  // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID) ||
+#else // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID) ||
        // !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
     draw_grid(canvas);
     draw_graph(canvas, state);
@@ -325,23 +315,4 @@ void draw_wpm_status(lv_obj_t *canvas, const struct nice_oled_central_state *sta
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
     draw_label(canvas, state);
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-
-#else // IS_ENABLED(CONFIG_NICE_EPAPER_ON)
-
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
-    draw_gauge(canvas, state);
-    draw_needle(canvas, state);
-#endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED) ||                              \
-    !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
-#else
-    draw_grid(canvas);
-    draw_graph(canvas, state);
-#endif
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-    draw_label(canvas, state);
-#endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-#endif // IS_ENABLED(CONFIG_NICE_EPAPER_ON)
 }
