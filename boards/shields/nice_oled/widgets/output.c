@@ -80,11 +80,5 @@ void draw_output_status(lv_obj_t *canvas, const struct nice_oled_central_state *
         }
         break;
     }
-#else
-    if (state->peripheral.connected) {
-        draw_ble_connected(canvas);
-    } else {
-        draw_ble_disconnected(canvas);
-    }
 #endif
 }
