@@ -62,8 +62,8 @@ static void send_report(const uint8_t *data, uint8_t len) {
         hid_int_ep_write(raw_hid_dev, report, CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE, NULL);
     if (err) {
         LOG_ERR("Failed to send report: %i", err);
-        k_sem_give(&hid_sem);
     }
+    k_sem_give(&hid_sem);
 }
 
 static int raw_hid_sent_event_listener(const zmk_event_t *eh) {

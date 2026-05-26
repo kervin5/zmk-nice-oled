@@ -205,40 +205,30 @@ void raw_hid_label_update_layout(uint8_t layout_index, const char *layout_list) 
 
 #if defined(CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST)
     if (layout_list != NULL) {
-        /* Parse comma-separated layout list */
-        char layouts_config[sizeof(CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST)];
-        strcpy(layouts_config, CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST);
+        /* Parse comma-separated layout list to find the layout_index-th token */
+#define LAYOUT_LIST_MAX_LEN 64
+        char layouts_config[LAYOUT_LIST_MAX_LEN];
+        strncpy(layouts_config, CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST, sizeof(layouts_config) - 1);
+        layouts_config[sizeof(layouts_config) - 1] = '\0';
 
         size_t i = 0;
         char *token = layouts_config;
-        while (token != NULL && i < layout_index) {
-            char *comma = strchr(token, ',');
-            if (comma) {
-                *comma = '\0';
-                token = comma + 1;
-            } else {
-                token = NULL;
-            }
-            i++;
-        }
-        /* Find the layout_index-th token */
-        token = layouts_config;
-        i = 0;
         while (i < layout_index) {
             char *comma = strchr(token, ',');
             if (comma) {
                 *comma = '\0';
                 token = comma + 1;
+                i++;
             } else {
                 break;
             }
-            i++;
         }
         char *end = strchr(token, ',');
         if (end) {
             *end = '\0';
         }
         snprintf(layout_str, sizeof(layout_str), "%s", token);
+#undef LAYOUT_LIST_MAX_LEN
     } else {
         snprintf(layout_str, sizeof(layout_str), "L%d", layout_index);
     }
