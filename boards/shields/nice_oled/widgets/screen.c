@@ -428,7 +428,11 @@ ZMK_SUBSCRIPTION(widget_wpm_status, zmk_wpm_state_changed);
 
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
+#if IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
+    lv_obj_set_size(widget->obj, CANVAS_WIDTH, CANVAS_HEIGHT);
+#else
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
+#endif
     nice_oled_central_state_init(&widget->central);
 
     if (nice_oled_screen_central_init(&widget->compositor, widget->obj, widget->cbuf) != 0) {

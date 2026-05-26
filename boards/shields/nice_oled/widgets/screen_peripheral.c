@@ -139,7 +139,11 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     widget->smart_battery_anim = NULL;
     widget->smart_battery_static = NULL;
+#if IS_ENABLED(CONFIG_NICE_OLED_NATIVE_PORTRAIT)
+    lv_obj_set_size(widget->obj, CANVAS_WIDTH, CANVAS_HEIGHT);
+#else
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
+#endif
     nice_oled_peripheral_state_init(&widget->peripheral);
 
     if (nice_oled_screen_peripheral_init(&widget->compositor, widget->obj, widget->cbuf) != 0) {
