@@ -138,6 +138,9 @@ static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) 
     uint8_t mods = zmk_hid_get_explicit_mods();
     static uint8_t s_prev_mods = 0;
 
+    /* Always clear label text first — prevents LVGL default "Text" from showing */
+    lv_label_set_text(label, "");
+
     if (mods == s_prev_mods) return;
     s_prev_mods = mods;
 

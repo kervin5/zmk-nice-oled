@@ -142,7 +142,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
     nice_oled_peripheral_state_init(&widget->peripheral);
 
-    if (nice_oled_screen_peripheral_init(&widget->compositor, widget->obj) != 0) {
+    if (nice_oled_screen_peripheral_init(&widget->compositor, widget->obj, widget->cbuf) != 0) {
         return -1;
     }
     lv_obj_t *canvas = widget->compositor.canvas;

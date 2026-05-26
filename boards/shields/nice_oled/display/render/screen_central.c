@@ -35,7 +35,7 @@ static void draw_canvas_central(lv_obj_t *canvas, const struct nice_oled_central
  * via raw_hid_label widget — no canvas drawing needed. */
 }
 
-int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *parent) {
+int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *parent, void *cbuf) {
     comp->obj = parent;
     comp->cbuf = NULL;
     comp->canvas = NULL;
@@ -48,6 +48,9 @@ int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *p
     if (!comp->canvas) {
         return -1;
     }
+
+    /* Wire the canvas to its pixel buffer — without this, all draw calls are no-ops */
+    lv_canvas_set_buffer(comp->canvas, cbuf, CANVAS_WIDTH, CANVAS_HEIGHT, LV_IMG_CF_TRUE_COLOR);
 
     comp->initialized = true;
     return 0;
