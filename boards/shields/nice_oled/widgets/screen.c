@@ -209,40 +209,20 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED)
 static void draw_mods_status(lv_obj_t *canvas, const struct status_state *state);
+#endif
 
 /**
- * Deferred rotation work — avoids race condition between display flush and rotate_canvas().
- * Calling rotate_canvas() synchronously from an event callback can cause visual artifacts
- * because lv_canvas_fill_bg() wipes the entire buffer while the display driver may still be reading.
+ * Redraws only the modifier indicator region on the canvas.
+ * This avoids a full draw_canvas() call which clears and redraws everything.
  */
-struct deferred_rotate_work {
-    struct k_work work;
-    struct zmk_widget_screen *widget;
-};
-
-static struct deferred_rotate_work rotate_work = {
-    .widget = NULL,
-};
-
-static void deferred_rotate_handler(struct k_work *work) {
-    struct deferred_rotate_work *w = CONTAINER_OF(work, struct deferred_rotate_work, work);
-    if (w->widget != NULL && w->widget->obj != NULL) {
-        lv_obj_t *canvas = lv_obj_get_child(w->widget->obj, 0);
-        if (canvas != NULL) {
-            rotate_canvas(canvas, w->widget->cbuf);
-        }
-    }
-}
-
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED)
 static void redraw_modifiers_region(struct zmk_widget_screen *widget) {
     lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
     draw_mods_status(canvas, &widget->state);
     // Invalidate rotate cache since we modified cbuf directly (bypassing draw_canvas)
     cbuf_cached = false;
-
-    // Schedule deferred rotation instead of calling it synchronously to avoid display buffer race
-    rotate_work.widget = widget;
-    k_work_schedule(&rotate_work.work, K_MSEC(10));
+    // Push the buffer to screen so modifiers appear immediately
+    rotate_canvas(canvas, widget->cbuf);
 }
 #endif
 
@@ -1296,10 +1276,6 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     IS_ENABLED(CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP)
     zmk_widget_sleep_status_init(&sleep_status_widget, canvas);
     lv_obj_align(zmk_widget_sleep_status_obj(&sleep_status_widget), LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_SLEEP_STATUS_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_SLEEP_STATUS_CUSTOM_Y);
-#endif
-
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED)
-    k_work_init(&rotate_work.work, deferred_rotate_handler);
 #endif
 
     return 0;
