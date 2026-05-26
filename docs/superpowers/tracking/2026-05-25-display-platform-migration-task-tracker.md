@@ -302,3 +302,12 @@ All 7 tasks completed with two-stage review (spec compliance + code quality). Br
 - **Code quality review:** Approved (minor: README.md out of sync, hardcoded RAW HID values in screen.c pre-existing issue)
 
 ---
+
+### Task 9: Fix LVGL Widget Object Size for Native Portrait Mode ✅ VERIFIED COMPLETE
+- **Commit:** `062510d`
+- **Files:** `boards/shields/nice_oled/widgets/screen.c`, `boards/shields/nice_oled/widgets/screen_peripheral.c`
+- **Problem:** `lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH)` set the LVGL object to 160×68 (landscape) while the canvas buffer was set to 68×160 (portrait). LVGL presents the widget at 160×68 regardless of buffer size — causing horizontal display even with `CONFIG_NICE_OLED_NATIVE_PORTRAIT=y`.
+- **Fix:** Added conditional sizing: when native portrait is enabled, use `CANVAS_WIDTH x CANVAS_HEIGHT` (68×160); otherwise fall back to legacy `CANVAS_HEIGHT x CANVAS_WIDTH` (160×160).
+- **Impact:** This was the root cause of your display still showing horizontal — all coordinate changes were correct but LVGL presented the canvas in landscape.
+
+---
