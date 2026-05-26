@@ -4,15 +4,26 @@
 #include <stdint.h>
 
 /**
+ * Style configuration for RAW HID labels.
+ * Controls placement and appearance of persistent label widgets.
+ */
+struct raw_hid_label_style {
+    lv_coord_t x;
+    lv_coord_t y;
+    const lv_font_t *font;
+    lv_color_t color;
+};
+
+/**
  * Initialize a persistent LVGL label for a RAW HID field.
- * Creates the label object on `parent` and returns it.
+ * Creates the label object on `parent` with explicit placement and style.
  * Called once per field type during screen initialization.
  */
-lv_obj_t *raw_hid_label_init_weather(lv_obj_t *parent);
-lv_obj_t *raw_hid_label_init_time(lv_obj_t *parent);
-lv_obj_t *raw_hid_label_init_volume(lv_obj_t *parent);
-lv_obj_t *raw_hid_label_init_layout(lv_obj_t *parent);
-lv_obj_t *raw_hid_label_init_media_player(lv_obj_t *parent);
+lv_obj_t *raw_hid_label_init_weather(lv_obj_t *parent, const struct raw_hid_label_style *style);
+lv_obj_t *raw_hid_label_init_time(lv_obj_t *parent, const struct raw_hid_label_style *style);
+lv_obj_t *raw_hid_label_init_volume(lv_obj_t *parent, const struct raw_hid_label_style *style);
+lv_obj_t *raw_hid_label_init_layout(lv_obj_t *parent, const struct raw_hid_label_style *style);
+lv_obj_t *raw_hid_label_init_media_player(lv_obj_t *parent, const struct raw_hid_label_style *style);
 
 /**
  * Update a RAW HID label with the current state value.

@@ -16,6 +16,13 @@ static lv_obj_t *s_volume_label = NULL;
 static lv_obj_t *s_layout_label = NULL;
 static lv_obj_t *s_media_player_label = NULL;
 
+/* Style references set during init — owned by caller */
+static const struct raw_hid_label_style *s_weather_style = NULL;
+static const struct raw_hid_label_style *s_time_style = NULL;
+static const struct raw_hid_label_style *s_volume_style = NULL;
+static const struct raw_hid_label_style *s_layout_style = NULL;
+static const struct raw_hid_label_style *s_media_player_style = NULL;
+
 /* Last displayed values for diff guards */
 static int8_t s_last_weather_temp = 127;
 static uint8_t s_last_time_hour = 0;
@@ -25,40 +32,100 @@ static uint8_t s_last_layout_index = 0;
 static char s_last_media_player[12] = "";
 
 /* ========================================================================
- * Initialization — creates persistent LVGL label objects
+ * Initialization — creates persistent LVGL label objects with style/position
  * ======================================================================== */
 
-lv_obj_t *raw_hid_label_init_weather(lv_obj_t *parent) {
+lv_obj_t *raw_hid_label_init_weather(lv_obj_t *parent, const struct raw_hid_label_style *style) {
     s_weather_label = lv_label_create(parent);
     lv_label_set_text(s_weather_label, "N/A");
+    s_weather_style = style;
+
+    if (style != NULL) {
+        lv_obj_align(s_weather_label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+        if (style->font != NULL) {
+            lv_obj_set_style_text_font(s_weather_label, style->font, LV_PART_MAIN);
+        }
+        if (style->color.full != 0) {
+            lv_obj_set_style_text_color(s_weather_label, style->color, LV_PART_MAIN);
+        }
+    }
+
     return s_weather_label;
 }
 
-lv_obj_t *raw_hid_label_init_time(lv_obj_t *parent) {
+lv_obj_t *raw_hid_label_init_time(lv_obj_t *parent, const struct raw_hid_label_style *style) {
     s_time_label = lv_label_create(parent);
     lv_label_set_text(s_time_label, "--:--");
+    s_time_style = style;
+
+    if (style != NULL) {
+        lv_obj_align(s_time_label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+        if (style->font != NULL) {
+            lv_obj_set_style_text_font(s_time_label, style->font, LV_PART_MAIN);
+        }
+        if (style->color.full != 0) {
+            lv_obj_set_style_text_color(s_time_label, style->color, LV_PART_MAIN);
+        }
+    }
+
     return s_time_label;
 }
 
-lv_obj_t *raw_hid_label_init_volume(lv_obj_t *parent) {
+lv_obj_t *raw_hid_label_init_volume(lv_obj_t *parent, const struct raw_hid_label_style *style) {
     s_volume_label = lv_label_create(parent);
 #if IS_ENABLED(CONFIG_NICE_EPAPER_ON)
     lv_label_set_text(s_volume_label, "Vol: 0%");
 #else
     lv_label_set_text(s_volume_label, "V:0");
 #endif
+    s_volume_style = style;
+
+    if (style != NULL) {
+        lv_obj_align(s_volume_label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+        if (style->font != NULL) {
+            lv_obj_set_style_text_font(s_volume_label, style->font, LV_PART_MAIN);
+        }
+        if (style->color.full != 0) {
+            lv_obj_set_style_text_color(s_volume_label, style->color, LV_PART_MAIN);
+        }
+    }
+
     return s_volume_label;
 }
 
-lv_obj_t *raw_hid_label_init_layout(lv_obj_t *parent) {
+lv_obj_t *raw_hid_label_init_layout(lv_obj_t *parent, const struct raw_hid_label_style *style) {
     s_layout_label = lv_label_create(parent);
     lv_label_set_text(s_layout_label, "L0");
+    s_layout_style = style;
+
+    if (style != NULL) {
+        lv_obj_align(s_layout_label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+        if (style->font != NULL) {
+            lv_obj_set_style_text_font(s_layout_label, style->font, LV_PART_MAIN);
+        }
+        if (style->color.full != 0) {
+            lv_obj_set_style_text_color(s_layout_label, style->color, LV_PART_MAIN);
+        }
+    }
+
     return s_layout_label;
 }
 
-lv_obj_t *raw_hid_label_init_media_player(lv_obj_t *parent) {
+lv_obj_t *raw_hid_label_init_media_player(lv_obj_t *parent, const struct raw_hid_label_style *style) {
     s_media_player_label = lv_label_create(parent);
     lv_label_set_text(s_media_player_label, "---");
+    s_media_player_style = style;
+
+    if (style != NULL) {
+        lv_obj_align(s_media_player_label, LV_ALIGN_TOP_LEFT, style->x, style->y);
+        if (style->font != NULL) {
+            lv_obj_set_style_text_font(s_media_player_label, style->font, LV_PART_MAIN);
+        }
+        if (style->color.full != 0) {
+            lv_obj_set_style_text_color(s_media_player_label, style->color, LV_PART_MAIN);
+        }
+    }
+
     return s_media_player_label;
 }
 
