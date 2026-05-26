@@ -1,8 +1,9 @@
 #pragma once
 
-#include "util.h"
 #include <lvgl.h>
 #include <zmk/endpoints.h>
+#include "../display/model/central_state.h"
+#include "../display/model/peripheral_state.h"
 
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 struct output_status_state {
@@ -17,4 +18,4 @@ struct peripheral_status_state {
 };
 #endif
 
-void draw_output_status(lv_obj_t *canvas, const struct status_state *state);
+void draw_output_status(lv_obj_t *canvas, const struct nice_oled_central_state *state);

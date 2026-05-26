@@ -108,13 +108,3 @@ nice_oled_dirty_mask_t nice_oled_central_apply_wpm(struct nice_oled_central_stat
     state->wpm[NICE_OLED_WPM_HISTORY_LEN - 1] = wpm;
     return NICE_OLED_DIRTY_WPM;
 }
-
-nice_oled_dirty_mask_t nice_oled_central_apply_modifiers(struct nice_oled_central_state *state,
-                                                         uint8_t mods) {
-    if (state->mod_state == mods) {
-        return NICE_OLED_DIRTY_NONE;
-    }
-
-    state->mod_state = mods;
-    return NICE_OLED_DIRTY_MODIFIERS;
-}

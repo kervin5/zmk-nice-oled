@@ -49,7 +49,7 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
     zephyr_library_sources(widgets/util.c)
 
     zephyr_library_sources(assets/vim.c)
-    if(CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_IDLE OR CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_IDLE)
+    if(CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_IDLE OR CONFIG_NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP)
       zephyr_library_sources(assets/sleep_status_art.c)
       zephyr_library_sources(widgets/sleep_status.c)
     endif()
@@ -85,6 +85,7 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_NICE_OLED_WIDGET_STATUS)
 
       if(CONFIG_NICE_OLED_WIDGET_LAYER)
         zephyr_library_sources(widgets/layer.c)
+      zephyr_library_sources(widgets/raw_hid_label.c)
       endif()
 
       target_sources_ifdef(CONFIG_NICE_OLED_WIDGET_PROFILE_BIG app PRIVATE assets/profile_active.c)

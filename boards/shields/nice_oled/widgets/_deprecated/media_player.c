@@ -1,3 +1,6 @@
+/* QUARANTINED — Task H of display platform migration refactor.
+ * Replaced by raw_hid_label widget (persistent LVGL labels with incremental updates).
+ * Kept for potential rollback if a valid use case is discovered later. */
 #include <zephyr/kernel.h>
 #include <zmk/display/status_screen.h>
 #include <zmk/event_manager.h>

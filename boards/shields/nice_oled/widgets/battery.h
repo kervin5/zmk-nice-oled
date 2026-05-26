@@ -1,7 +1,8 @@
 #pragma once
 
 #include <lvgl.h>
-#include "util.h"
+#include "../display/model/central_state.h"
+#include "../display/model/peripheral_state.h"
 
 struct battery_status_state {
     uint8_t level;
@@ -9,7 +10,7 @@ struct battery_status_state {
     bool usb_present;
 #endif
 };
-void draw_battery_status(lv_obj_t *canvas, const struct status_state *state);
+void draw_battery_status(lv_obj_t *canvas, const struct nice_oled_central_state *state);
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_SMART_BATTERY)
 void animation_smart_battery_on(lv_obj_t *canvas);
 void animation_smart_battery_off(lv_obj_t *canvas);

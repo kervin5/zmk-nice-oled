@@ -4,14 +4,14 @@
 
 #include <lvgl.h>
 #include <zephyr/kernel.h>
-#include "util.h"
+#include "../display/model/peripheral_state.h"
 #include "../display/render/screen_common.h"
 
 struct zmk_widget_screen {
     sys_snode_t node;
     lv_obj_t *obj;
     lv_color_t cbuf[CANVAS_HEIGHT * CANVAS_HEIGHT];
-    struct status_state state;
+    struct nice_oled_peripheral_state peripheral;  /* Typed model — replaces struct status_state */
     struct nice_oled_compositor compositor;
 };
 

@@ -13,29 +13,29 @@ LV_IMG_DECLARE(grid);
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \
     !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
 #else
-static void draw_gauge(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_gauge(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
     lv_canvas_draw_img(canvas, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_Y, &gauge, &img_dsc);
 }
 
-static void draw_needle(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_needle(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_line_dsc_t line_dsc;
     init_line_dsc(&line_dsc, LVGL_FOREGROUND, 1);
 
     int centerX = CONFIG_NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_X;
     int centerY = CONFIG_NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_Y;
     int offset = 13;
-    int value = state->central.wpm[9];
+    int value = state->wpm[9];
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE)
     float max = CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE_MAX;
 #else
     float max = 0;
     for (int i = 0; i < 10; i++) {
-        if (state->central.wpm[i] > max) {
-            max = state->central.wpm[i];
+        if (state->wpm[i] > max) {
+            max = state->wpm[i];
         }
     }
 #endif
@@ -69,7 +69,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_canvas_draw_img(canvas, 0, 65, &grid, &img_dsc);
 }
 
-static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_line_dsc_t line_dsc;
     init_line_dsc(&line_dsc, LVGL_FOREGROUND, 2);
     lv_point_t points[10];
@@ -82,7 +82,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
     int value = 0;
     for (int i = 0; i < 10; i++) {
-        value = state->central.wpm[i];
+        value = state->wpm[i];
         if (value > max) {
             value = max;
         }
@@ -94,11 +94,11 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
     int min = 256;
 
     for (int i = 0; i < 10; i++) {
-        if (state->central.wpm[i] > max) {
-            max = state->central.wpm[i];
+        if (state->wpm[i] > max) {
+            max = state->wpm[i];
         }
-        if (state->central.wpm[i] < min) {
-            min = state->central.wpm[i];
+        if (state->wpm[i] < min) {
+            min = state->wpm[i];
         }
     }
 
@@ -109,7 +109,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
     for (int i = 0; i < 10; i++) {
         points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (state->central.wpm[i] - min) * 32 / range;
+        points[i].y = 97 - (state->wpm[i] - min) * 32 / range;
     }
 #endif
 
@@ -119,10 +119,9 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
        // !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH)
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-static void draw_label(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
 
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_SYMBOL_VERTICAL) ||              \
-    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_ONE_LINE_VERTICAL)
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_VER)
 
 #define DRAW_LABEL_TEXT_ALIGN LV_TEXT_ALIGN_CENTER
 #define DRAW_LABEL_FONTS &lv_font_montserrat_14
@@ -138,8 +137,7 @@ static void draw_label(lv_obj_t *canvas, const struct status_state *state) {
 #define DRAW_LABEL_WMP_Y 103
 #define DRAW_LABEL_WMP_X 26
 
-#endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_SYMBOL_VERTICAL) ||
-       // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_ONE_LINE_VERTICAL)
+#endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED_VER)
 
     lv_draw_label_dsc_t label_left_dsc;
     init_label_dsc(&label_left_dsc, LVGL_FOREGROUND, DRAW_LABEL_FONTS, LV_TEXT_ALIGN_LEFT);
@@ -150,36 +148,36 @@ static void draw_label(lv_obj_t *canvas, const struct status_state *state) {
 
     char wpm_text[6] = {};
 
-    snprintf(wpm_text, sizeof(wpm_text), "%d", state->central.wpm[9]);
+    snprintf(wpm_text, sizeof(wpm_text), "%d", state->wpm[9]);
     lv_canvas_draw_text(canvas, DRAW_LABEL_WMP_X, DRAW_LABEL_WMP_Y, 42, &label_dsc_wpm, wpm_text);
 }
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
 
 #else // CONFIG_NICE_EPAPER_ON
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER)
-static void draw_gauge(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_gauge(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_img_dsc_t img_dsc;
     lv_draw_img_dsc_init(&img_dsc);
 
     lv_canvas_draw_img(canvas, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_WPM_GAUGE_CUSTOM_Y, &gauge, &img_dsc);
 }
 
-static void draw_needle(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_needle(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_line_dsc_t line_dsc;
     init_line_dsc(&line_dsc, LVGL_FOREGROUND, 1);
 
     int centerX = CONFIG_NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_X;
     int centerY = CONFIG_NICE_OLED_WIDGET_WPM_NEEDLE_CENTER_CUSTOM_Y;
     int offset = 5;   // 5 def, largo de la aguja
-    int value = state->central.wpm[9];
+    int value = state->wpm[9];
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE)
     float max = CONFIG_NICE_OLED_WIDGET_WPM_GRAPH_FIXED_RANGE_MAX;
 #else
     float max = 0;
     for (int i = 0; i < 10; i++) {
-        if (state->central.wpm[i] > max) {
-            max = state->central.wpm[i];
+        if (state->wpm[i] > max) {
+            max = state->wpm[i];
         }
     }
 #endif
@@ -226,7 +224,7 @@ static void draw_grid(lv_obj_t *canvas) {
     lv_canvas_draw_img(canvas, -1, 95, &grid, &img_dsc);
 }
 
-static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_graph(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
     lv_draw_line_dsc_t line_dsc;
     init_line_dsc(&line_dsc, LVGL_FOREGROUND, 2);
     lv_point_t points[10];
@@ -239,7 +237,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
     int value = 0;
     for (int i = 0; i < 10; i++) {
-        value = state->central.wpm[i];
+        value = state->wpm[i];
         if (value > max) {
             value = max;
         }
@@ -254,11 +252,11 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
     int min = 256;
 
     for (int i = 0; i < 10; i++) {
-        if (state->central.wpm[i] > max) {
-            max = state->central.wpm[i];
+        if (state->wpm[i] > max) {
+            max = state->wpm[i];
         }
-        if (state->central.wpm[i] < min) {
-            min = state->central.wpm[i];
+        if (state->wpm[i] < min) {
+            min = state->wpm[i];
         }
     }
 
@@ -269,7 +267,7 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 
     for (int i = 0; i < 10; i++) {
         points[i].x = 0 + i * 7.4;
-        points[i].y = 97 - (state->central.wpm[i] - min) * 32 / range;
+        points[i].y = 97 - (state->wpm[i] - min) * 32 / range;
     }
 #endif
 
@@ -278,18 +276,18 @@ static void draw_graph(lv_obj_t *canvas, const struct status_state *state) {
 #endif
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
-static void draw_label(lv_obj_t *canvas, const struct status_state *state) {
+static void draw_label(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
 
     lv_draw_label_dsc_t label_dsc_wpm;
     init_label_dsc(&label_dsc_wpm, LVGL_FOREGROUND, &pixel_operator_mono_12, LV_TEXT_ALIGN_LEFT);
 
     char wpm_text[10] = {};
 
-    snprintf(wpm_text, sizeof(wpm_text), "%d", state->central.wpm[9]);
+    snprintf(wpm_text, sizeof(wpm_text), "%d", state->wpm[9]);
     // if wpm < 10, else if wpm => 10 and wpm < 100, else wpm >= 100
-    if (state->central.wpm[9] < 10) {
+    if (state->wpm[9] < 10) {
         lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X + 5, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y, 50, &label_dsc_wpm, wpm_text);
-    } else if (state->central.wpm[9] >= 10 && state->central.wpm[9] < 100) {
+    } else if (state->wpm[9] >= 10 && state->wpm[9] < 100) {
         lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X + 2, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y, 50, &label_dsc_wpm, wpm_text);
     } else {
         lv_canvas_draw_text(canvas, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_WPM_LABEL_CUSTOM_Y, 50, &label_dsc_wpm, wpm_text);
@@ -298,7 +296,15 @@ static void draw_label(lv_obj_t *canvas, const struct status_state *state) {
 #endif // IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_NUMBER)
 #endif // CONFIG_NICE_EPAPER_ON
 
-void draw_wpm_status(lv_obj_t *canvas, const struct status_state *state) {
+void draw_wpm_status(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
+    // Skip canvas draw when animation handles WPM display
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) || \
+    IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT)
+    (void)canvas;
+    (void)state;
+    return;
+#endif
+
 #if IS_ENABLED(CONFIG_NICE_EPAPER_ON)
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_LUNA) ||                                                \
     IS_ENABLED(CONFIG_NICE_OLED_WIDGET_WPM_BONGO_CAT) ||                                           \

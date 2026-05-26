@@ -38,7 +38,7 @@ static void draw_ble_connected(lv_obj_t *canvas) {
     lv_canvas_draw_img(canvas, CONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y, &bt, &img_dsc);
 }
 
-void draw_output_status(lv_obj_t *canvas, const struct status_state *state) {
+void draw_output_status(lv_obj_t *canvas, const struct nice_oled_central_state *state) {
 #if IS_ENABLED(CONFIG_NICE_EPAPER_ON) &&                                                           \
     !IS_ENABLED(CONFIG_NICE_OLED_WIDGET_CENTRAL_SHOW_BATTERY_PERIPHERAL_ALL)
     lv_draw_label_dsc_t label_dsc;
@@ -62,14 +62,14 @@ void draw_output_status(lv_obj_t *canvas, const struct status_state *state) {
 #endif // CONFIG_NICE_EPAPER_ON
 
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
-    switch (state->central.selected_endpoint.transport) {
+    switch (state->selected_endpoint.transport) {
     case ZMK_TRANSPORT_USB:
         draw_usb_connected(canvas);
         break;
 
     case ZMK_TRANSPORT_BLE:
-        if (state->central.active_profile_bonded) {
-            if (state->central.active_profile_connected) {
+        if (state->active_profile_bonded) {
+            if (state->active_profile_connected) {
                 draw_ble_connected(canvas);
             } else {
                 draw_ble_disconnected(canvas);

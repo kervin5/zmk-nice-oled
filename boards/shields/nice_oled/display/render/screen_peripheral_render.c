@@ -8,21 +8,18 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../model/peripheral_state.h"
 #include "screen_common.h"
 #include "../../widgets/util.h"
-#include "../../widgets/battery.h"
-#include "../../widgets/output.h"
 
-/* Canvas orchestration */
-static void draw_canvas_peripheral(lv_obj_t *canvas, const struct status_state *state) {
+/* Canvas orchestration — peripheral only draws background (no output/battery/profile on peripheral) */
+static void draw_canvas_peripheral(lv_obj_t *canvas) {
     draw_background(canvas);
-    draw_output_status(canvas, state);
-    draw_battery_status(canvas, state);
 }
 
 int nice_oled_screen_peripheral_init(struct nice_oled_compositor *comp, lv_obj_t *parent) {
     comp->obj = parent;
     comp->cbuf = NULL;
     comp->canvas = NULL;
-    comp->state = NULL;
+    comp->central_state = NULL;
+    comp->peripheral_state = NULL;
     comp->dirty = NICE_OLED_DIRTY_NONE;
     comp->initialized = false;
 
@@ -36,8 +33,8 @@ int nice_oled_screen_peripheral_init(struct nice_oled_compositor *comp, lv_obj_t
 }
 
 void nice_oled_screen_peripheral_redraw(struct nice_oled_compositor *comp) {
-    if (!comp || !comp->initialized || !comp->canvas || !comp->state) {
+    if (!comp || !comp->initialized || !comp->canvas) {
         return;
     }
-    draw_canvas_peripheral(comp->canvas, comp->state);
+    draw_canvas_peripheral(comp->canvas);
 }

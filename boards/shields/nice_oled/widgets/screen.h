@@ -2,8 +2,8 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
+#include "../display/model/central_state.h"
 #include "../display/render/screen_common.h"
-#include "util.h"
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 
@@ -11,7 +11,7 @@ struct zmk_widget_screen {
     sys_snode_t node;
     lv_obj_t *obj;
     lv_color_t cbuf[CANVAS_HEIGHT * CANVAS_HEIGHT];
-    struct status_state state;
+    struct nice_oled_central_state central;  /* Typed model — replaces struct status_state */
     struct nice_oled_compositor compositor;
 };
 

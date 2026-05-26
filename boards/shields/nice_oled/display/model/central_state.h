@@ -35,24 +35,21 @@ struct nice_oled_central_state {
     uint8_t layer_index;
     const char *layer_label;
     uint8_t wpm[NICE_OLED_WPM_HISTORY_LEN];
-    uint8_t mod_state;
     struct nice_oled_raw_hid_state raw_hid;
 };
 
 void nice_oled_central_state_init(struct nice_oled_central_state *state);
 nice_oled_dirty_mask_t nice_oled_central_apply_battery_state(struct nice_oled_central_state *state,
-                                                             uint8_t battery, bool charging);
+                                                              uint8_t battery, bool charging);
 nice_oled_dirty_mask_t
 nice_oled_central_apply_split_battery_state(struct nice_oled_central_state *state, uint8_t source,
                                             uint8_t level, bool usb_present);
 nice_oled_dirty_mask_t nice_oled_central_apply_layer(struct nice_oled_central_state *state,
-                                                     uint8_t index, const char *label);
+                                                      uint8_t index, const char *label);
 nice_oled_dirty_mask_t nice_oled_central_apply_output(struct nice_oled_central_state *state,
-                                                      const struct zmk_endpoint_instance *endpoint,
-                                                      int active_profile_index,
-                                                      bool active_profile_connected,
-                                                      bool active_profile_bonded);
+                                                       const struct zmk_endpoint_instance *endpoint,
+                                                       int active_profile_index,
+                                                       bool active_profile_connected,
+                                                       bool active_profile_bonded);
 nice_oled_dirty_mask_t nice_oled_central_apply_wpm(struct nice_oled_central_state *state,
                                                    uint8_t wpm);
-nice_oled_dirty_mask_t nice_oled_central_apply_modifiers(struct nice_oled_central_state *state,
-                                                         uint8_t mods);

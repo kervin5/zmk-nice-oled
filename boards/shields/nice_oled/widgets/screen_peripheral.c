@@ -46,7 +46,7 @@ static struct zmk_widget_luna luna_widget;
 static void set_battery_status(struct zmk_widget_screen *widget,
                                 struct battery_status_state state) {
     const nice_oled_dirty_mask_t dirty = nice_oled_peripheral_apply_battery_state(
-        &widget->state.peripheral, state.level,
+        &widget->peripheral, state.level,
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
         state.usb_present
 #else
@@ -58,14 +58,14 @@ static void set_battery_status(struct zmk_widget_screen *widget,
         return;
     }
 
-    widget->state.dirty |= dirty;
-    widget->compositor.state = &widget->state;
+    widget->peripheral.dirty |= dirty;
+    widget->compositor.peripheral_state = &widget->peripheral;
     nice_oled_screen_peripheral_redraw(&widget->compositor);
 
     // draw_animation(widget->obj, widget);
 
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_SMART_BATTERY)
-    if (widget->state.charging) {
+    if (widget->peripheral.charging) {
         // mostrar
         // lv_obj_clear_flag(widget->obj, LV_OBJ_FLAG_HIDDEN);
         animation_smart_battery_on(widget->obj);
@@ -113,14 +113,14 @@ static struct peripheral_status_state get_state(const zmk_event_t *_eh) {
 static void set_connection_status(struct zmk_widget_screen *widget,
                                   struct peripheral_status_state state) {
     const nice_oled_dirty_mask_t dirty =
-        nice_oled_peripheral_apply_connection(&widget->state.peripheral, state.connected);
+        nice_oled_peripheral_apply_connection(&widget->peripheral, state.connected);
 
     if (dirty == NICE_OLED_DIRTY_NONE) {
         return;
     }
 
-    widget->state.dirty |= dirty;
-    widget->compositor.state = &widget->state;
+    widget->peripheral.dirty |= dirty;
+    widget->compositor.peripheral_state = &widget->peripheral;
     nice_oled_screen_peripheral_redraw(&widget->compositor);
 }
 
@@ -140,7 +140,7 @@ ZMK_SUBSCRIPTION(widget_peripheral_status, zmk_split_peripheral_status_changed);
 int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
     widget->obj = lv_obj_create(parent);
     lv_obj_set_size(widget->obj, CANVAS_HEIGHT, CANVAS_WIDTH);
-    nice_oled_status_state_init(&widget->state);
+    nice_oled_peripheral_state_init(&widget->peripheral);
 
     if (nice_oled_screen_peripheral_init(&widget->compositor, widget->obj) != 0) {
         return -1;

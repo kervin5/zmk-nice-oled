@@ -93,7 +93,7 @@ config NICE_OLED_SHOW_SLEEP_ART_ON_IDLE
     default n
 
 config NICE_OLED_SHOW_SLEEP_ART_ON_SLEEP
-    bool "whether the sleep art should be shown on idle"
+    bool "whether the sleep art should be shown on sleep"
     default n
 
 ## ANIMATION ON CENTRAL AND PERIPHERAL END }}}
@@ -107,13 +107,8 @@ config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_SMART_BATTERY
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_WPM
     bool "Enable PERIPHERAL WPM widget compatibility"
     default n
-
-if NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_WPM
-
-config NICE_OLED_WIDGET_STATUS
-    select ZMK_WPM
-
-endif
+    select NICE_OLED_WIDGET_STATUS
+    select ZMK_WPM if NICE_OLED_WIDGET_STATUS
 ##}}}
 ### NICE_OLED_WIDGET_ANIMATION_PERIPHERAL || NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL {{{
 config NICE_OLED_WIDGET_ANIMATION_PERIPHERAL
@@ -181,11 +176,10 @@ if !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
 config NICE_OLED_WIDGET_WPM
     bool "Enable Nice OLED WPM Widget"
     default y
+    select NICE_OLED_WIDGET_STATUS
+    select ZMK_WPM if NICE_OLED_WIDGET_STATUS
 
 if NICE_OLED_WIDGET_WPM
-
-config NICE_OLED_WIDGET_STATUS
-    select ZMK_WPM
 
 config NICE_OLED_WIDGET_WPM_NUMBER
     bool "Enable NUMBER for WPM"

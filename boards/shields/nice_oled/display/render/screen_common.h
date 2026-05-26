@@ -6,13 +6,15 @@
 #include <lvgl.h>
 #include "../model/dirty_domains.h"
 
-struct status_state;
+struct nice_oled_central_state;
+struct nice_oled_peripheral_state;
 
 struct nice_oled_compositor {
     lv_obj_t *obj;              /* LVGL object (screen container) */
     lv_img_dsc_t *cbuf;         /* Canvas framebuffer buffer descriptor */
     lv_obj_t *canvas;           /* Canvas LVGL object */
-    const struct status_state *state;  /* Pointer to caller's status_state for redraw */
+    const struct nice_oled_central_state *central_state;  /* Central typed model pointer */
+    const struct nice_oled_peripheral_state *peripheral_state;  /* Peripheral typed model pointer */
     nice_oled_dirty_mask_t dirty;   /* Accumulated dirty domains */
     bool initialized;
 };
