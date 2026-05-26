@@ -212,19 +212,6 @@ static void draw_mods_status(lv_obj_t *canvas, const struct status_state *state)
 #endif
 
 /**
- * Redraws only the modifier indicator region on the canvas.
- * This avoids a full draw_canvas() call which clears and redraws everything.
- */
-#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS_FIXED)
-static void redraw_modifiers_region(struct zmk_widget_screen *widget) {
-    lv_obj_t *canvas = lv_obj_get_child(widget->obj, 0);
-    draw_mods_status(canvas, &widget->state);
-    // Invalidate rotate cache since we modified cbuf directly (bypassing draw_canvas)
-    cbuf_cached = false;
-}
-#endif
-
-/**
  * sleep status
  **/
 
@@ -537,15 +524,13 @@ static void set_mods_status(struct zmk_widget_screen *widget,
 #if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     uint8_t new_mods = zmk_hid_get_explicit_mods();
 
-    // Only redraw if modifier state actually changed (complement of Task 1 guard,
-    // but here we also avoid the full draw_canvas call)
+    // Only redraw if modifier state actually changed (complement of Task 1 guard)
     if (widget->state.mod_state == new_mods) {
         return;
     }
     widget->state.mod_state = new_mods;
 
-    // Partial update: only redraw the modifier region instead of full canvas
-    redraw_modifiers_region(widget);
+    draw_canvas(widget->obj, widget->cbuf, &widget->state);
 #endif
 }
 
