@@ -711,11 +711,10 @@ static struct is_connected_notification get_is_hid_connected(const zmk_event_t *
 static void hid_is_connected_update_cb(struct is_connected_notification is_connected) {
     struct zmk_widget_screen *widget;
     SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) {
-        if (widget->state.is_connected == is_connected.value) {
-            return;
+        if (widget->state.is_connected != is_connected.value) {
+            widget->state.is_connected = is_connected.value;
+            draw_canvas(widget->obj, widget->cbuf, &widget->state);
         }
-        widget->state.is_connected = is_connected.value;
-        draw_canvas(widget->obj, widget->cbuf, &widget->state);
     }
 }
 
@@ -922,8 +921,9 @@ static void draw_canvas(lv_obj_t *widget, lv_color_t cbuf[], const struct status
 
 static void set_battery_status(struct zmk_widget_screen *widget,
                                struct battery_status_state state) {
+    bool charging_changed = false;
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
-    bool charging_changed = (widget->state.charging != state.usb_present);
+    charging_changed = (widget->state.charging != state.usb_present);
     if (charging_changed) {
         widget->state.charging = state.usb_present;
     }
@@ -1046,7 +1046,9 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER)
 static void set_layer_status(struct zmk_widget_screen *widget, struct layer_status_state state) {
     bool index_changed = (widget->state.layer_index != state.index);
-    bool label_changed = strcmp(widget->state.layer_label, state.label) != 0;
+    bool label_changed = (widget->state.layer_label == state.label) ? false :
+                         ((widget->state.layer_label == NULL || state.label == NULL) ? true :
+                          strcmp(widget->state.layer_label, state.label) != 0);
     if (!index_changed && !label_changed) {
         return;
     }
