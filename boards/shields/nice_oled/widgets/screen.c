@@ -484,7 +484,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_WEATHER)
     static const struct raw_hid_label_style weather_style = {
         .x = 0,
-        .y = 120,
+        .y = 100,
         .font = &pixel_operator_mono_16,
         .color = LVGL_FOREGROUND,
     };
@@ -493,7 +493,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_TIME)
     static const struct raw_hid_label_style time_style = {
         .x = 0,
-        .y = 132,
+        .y = 112,
         .font = &pixel_operator_mono_16,
         .color = LVGL_FOREGROUND,
     };
@@ -502,7 +502,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_VOLUME)
     static const struct raw_hid_label_style volume_style = {
         .x = 0,
-        .y = 144,
+        .y = 124,
         .font = &pixel_operator_mono_16,
         .color = LVGL_FOREGROUND,
     };
@@ -511,7 +511,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #ifdef CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT
     static const struct raw_hid_label_style layout_style = {
         .x = 0,
-        .y = 156,
+        .y = 136,
         .font = &pixel_operator_mono_16,
         .color = LVGL_FOREGROUND,
     };
@@ -520,7 +520,7 @@ int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *parent) {
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID_MEDIA_PLAYER_SPOTIFY_MACOS)
     static const struct raw_hid_label_style media_player_style = {
         .x = 0,
-        .y = 156,
+        .y = 148,
         .font = &pixel_operator_mono_16,
         .color = LVGL_FOREGROUND,
     };
