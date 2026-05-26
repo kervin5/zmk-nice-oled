@@ -9,3 +9,4 @@ struct layer_status_state {
 };
 
 void draw_layer_status(lv_obj_t *canvas, const struct status_state *state);
+bool layer_anim_should_flash(void);

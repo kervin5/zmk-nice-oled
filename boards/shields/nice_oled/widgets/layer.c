@@ -97,6 +97,15 @@ static const char *layer_anim_get_frame(char *out_text, size_t out_size) {
     }
 }
 
+// Returns true if background should be flashed during current frame
+bool layer_anim_should_flash(void) {
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER_COLOR_FLASH)
+    return layer_anim.flash_active;
+#else
+    return false;
+#endif
+}
+
 #endif /* CONFIG_NICE_OLED_WIDGET_LAYER */
 
 void draw_layer_status(lv_obj_t *canvas, const struct status_state *state) {
@@ -141,5 +150,15 @@ void draw_layer_status(lv_obj_t *canvas, const struct status_state *state) {
 
     // Draw with animation offset if applicable
     int16_t x = CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X + layer_anim.offset_x;
+
+#if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER_COLOR_FLASH) && IS_ENABLED(CONFIG_NICE_OLED_WIDGET_LAYER)
+    if (layer_anim_should_flash()) {
+        label_dsc.color = LVGL_BACKGROUND;
+    } else {
+        label_dsc.color = LVGL_FOREGROUND;
+    }
+#else
+    label_dsc.color = LVGL_FOREGROUND;
+#endif
     lv_canvas_draw_text(canvas, x, CONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y, 68, &label_dsc, display_text);
 }
