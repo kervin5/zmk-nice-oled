@@ -35,3 +35,18 @@ void init_line_dsc(lv_draw_line_dsc_t *line_dsc, lv_color_t color,
   line_dsc->color = color;
   line_dsc->width = width;
 }
+
+void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
+  static lv_color_t cbuf_tmp[CANVAS_HEIGHT * CANVAS_HEIGHT];
+  memcpy(cbuf_tmp, cbuf, sizeof(cbuf_tmp));
+
+  lv_img_dsc_t img;
+  img.data = (void *)cbuf_tmp;
+  img.header.cf = LV_IMG_CF_TRUE_COLOR;
+  img.header.w = CANVAS_HEIGHT;
+  img.header.h = CANVAS_HEIGHT;
+
+  lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
+  lv_canvas_transform(canvas, &img, 900, LV_IMG_ZOOM_NONE, -1, 0,
+                      CANVAS_HEIGHT / 2, CANVAS_HEIGHT / 2, false);
+}

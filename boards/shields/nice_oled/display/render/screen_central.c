@@ -38,6 +38,7 @@ static void draw_canvas_central(lv_obj_t *canvas, const struct nice_oled_central
 int nice_oled_screen_central_init(struct nice_oled_compositor *comp, lv_obj_t *parent, void *cbuf) {
     comp->obj = parent;
     comp->cbuf = NULL;
+    comp->raw_cbuf = cbuf;
     comp->canvas = NULL;
     comp->central_state = NULL;
     comp->peripheral_state = NULL;
@@ -61,6 +62,9 @@ void nice_oled_screen_central_redraw(struct nice_oled_compositor *comp) {
         return;
     }
     draw_canvas_central(comp->canvas, comp->central_state);
+
+    /* Rotate canvas for portrait orientation — matches main branch behavior */
+    rotate_canvas(comp->canvas, (lv_color_t *)comp->raw_cbuf);
 }
 
 /* ========================================================================

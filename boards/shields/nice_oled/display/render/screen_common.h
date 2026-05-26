@@ -12,6 +12,7 @@ struct nice_oled_peripheral_state;
 struct nice_oled_compositor {
     lv_obj_t *obj;              /* LVGL object (screen container) */
     lv_img_dsc_t *cbuf;         /* Canvas framebuffer buffer descriptor */
+    void *raw_cbuf;             /* Raw canvas color buffer for rotation */
     lv_obj_t *canvas;           /* Canvas LVGL object */
     const struct nice_oled_central_state *central_state;  /* Central typed model pointer */
     const struct nice_oled_peripheral_state *peripheral_state;  /* Peripheral typed model pointer */
