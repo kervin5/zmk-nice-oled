@@ -2,6 +2,7 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
+#include "util.h"
 #include "../display/model/central_state.h"
 #include "../display/render/screen_common.h"
 #include <lvgl.h>

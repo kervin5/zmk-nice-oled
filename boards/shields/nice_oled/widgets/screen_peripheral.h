@@ -2,6 +2,7 @@
 #ifndef SCREEN_PERIPHERAL_H_
 #define SCREEN_PERIPHERAL_H_
 
+#include "util.h"
 #include <lvgl.h>
 #include <zephyr/kernel.h>
 #include "../display/model/peripheral_state.h"

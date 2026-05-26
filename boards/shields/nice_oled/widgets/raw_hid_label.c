@@ -4,7 +4,9 @@
  * Each field type gets its own label object created once, updated incrementally.
  */
 
+#define _GNU_SOURCE
 #include "raw_hid_label.h"
+#include <zephyr/kernel.h>
 #include <string.h>
 
 /* Persistent label objects — one per field type */
@@ -140,17 +142,36 @@ void raw_hid_label_update_layout(uint8_t layout_index, const char *layout_list) 
         char layouts_config[sizeof(CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST)];
         strcpy(layouts_config, CONFIG_NICE_OLED_WIDGET_RAW_HID_LAYOUT_LIST);
 
-        char *token = strtok(layouts_config, ",");
         size_t i = 0;
+        char *token = layouts_config;
         while (token != NULL && i < layout_index) {
+            char *comma = strchr(token, ',');
+            if (comma) {
+                *comma = '\0';
+                token = comma + 1;
+            } else {
+                token = NULL;
+            }
             i++;
-            token = strtok(NULL, ",");
         }
-        if (token != NULL) {
-            snprintf(layout_str, sizeof(layout_str), "%s", token);
-        } else {
-            snprintf(layout_str, sizeof(layout_str), "L%d", layout_index);
+        /* Find the layout_index-th token */
+        token = layouts_config;
+        i = 0;
+        while (i < layout_index) {
+            char *comma = strchr(token, ',');
+            if (comma) {
+                *comma = '\0';
+                token = comma + 1;
+            } else {
+                break;
+            }
+            i++;
         }
+        char *end = strchr(token, ',');
+        if (end) {
+            *end = '\0';
+        }
+        snprintf(layout_str, sizeof(layout_str), "%s", token);
     } else {
         snprintf(layout_str, sizeof(layout_str), "L%d", layout_index);
     }

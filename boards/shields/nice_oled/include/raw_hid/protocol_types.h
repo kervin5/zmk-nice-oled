@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "raw_hid_state.h"
+#include "../../display/model/raw_hid_state.h"
 
 enum nice_oled_raw_hid_kind {
     NICE_OLED_RAW_HID_TIME,     // 0xAA, needs 3 bytes total (type + hour + minute)

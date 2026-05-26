@@ -1,4 +1,5 @@
 #include "output.h"
+#include "util.h"
 // #include "../assets/custom_fonts.h"
 #include <fonts.h>
 #include <zephyr/kernel.h>

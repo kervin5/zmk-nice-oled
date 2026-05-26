@@ -1,4 +1,5 @@
 #include "layer.h"
+#include "util.h"
 #include <fonts.h>
 #include <zephyr/kernel.h>
 

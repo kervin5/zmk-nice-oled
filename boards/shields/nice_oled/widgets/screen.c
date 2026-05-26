@@ -120,7 +120,7 @@ static struct zmk_widget_modifiers modifiers_widget;
 
 /* RAW HID label listeners — bridge ZMK notifications to persistent LVGL labels */
 #if IS_ENABLED(CONFIG_NICE_OLED_WIDGET_RAW_HID)
-#include <zmk/events/raw_hid.h>
+#include <raw_hid/hid.h>
 #include "raw_hid_label.h"
 
 static int raw_hid_weather_listener(const zmk_event_t *eh) {
@@ -216,7 +216,7 @@ static void set_battery_status(struct zmk_widget_screen *widget,
         return;
     }
 
-    widget->central.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -259,7 +259,7 @@ static void set_battery_status(struct zmk_widget_screen *widget, struct battery_
         return;
     }
 
-    widget->central.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -332,7 +332,7 @@ static void set_layer_status(struct zmk_widget_screen *widget, struct layer_stat
         return;
     }
 
-    widget->central.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -366,7 +366,7 @@ static void set_output_status(struct zmk_widget_screen *widget,
         return;
     }
 
-    widget->central.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 
@@ -404,7 +404,7 @@ static void set_wpm_status(struct zmk_widget_screen *widget, struct wpm_status_s
     const nice_oled_dirty_mask_t dirty =
         nice_oled_central_apply_wpm(&widget->central, state.wpm);
 
-    widget->central.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     nice_oled_screen_central_redraw(&widget->compositor);
 }
 

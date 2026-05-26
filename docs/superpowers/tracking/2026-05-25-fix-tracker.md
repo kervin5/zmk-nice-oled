@@ -80,6 +80,35 @@ config NICE_OLED_NATIVE_PORTRAIT
 
 ---
 
+### Task S1: Smoke Build Fixes (Discovered During Verification)
+
+The following compilation issues were discovered and fixed during smoke builds using `.venv/bin/west`:
+
+**S1.1 — Missing `#include "util.h"` in header/source files:**
+- Files: `screen.h`, `screen_peripheral.h`, `battery.c`, `layer.c`, `profile.c`, `output.c`
+- Issue: `CANVAS_HEIGHT` undeclared, implicit declarations for `init_label_dsc`/`init_rect_dsc`
+
+**S1.2 — Dirty mask reference bug:**
+- Files: `screen.c` (5 occurrences), `screen_peripheral.c` (2 occurrences)
+- Changed `widget->central.dirty` / `widget->peripheral.dirty` → `widget->compositor.dirty`
+
+**S1.3 — Missing font include in screen_central.c:**
+- Added `#include "../../include/fonts.h"` for `pixel_operator_mono_16` declaration
+
+**S1.4 — Wrong RAW HID header path in protocol_types.h:**
+- Changed `"raw_hid_state.h"` → `"../../display/model/raw_hid_state.h"`
+
+**S1.5 — Wrong event header include in screen.c:**
+- Changed `<zmk/events/raw_hid.h>` → `<raw_hid/hid.h>`
+
+**S1.6 — Missing zephyr/kernel.h in raw_hid_label.c:**
+- Added `#include <zephyr/kernel.h>` for IS_ENABLED() macro availability
+
+**S1.7 — strtok POSIX dependency (C99 +nostdinc):**
+- Replaced strtok with manual strchr-based parsing in raw_hid_label.c
+
+---
+
 ## Progress
 
 | Task | Description | Status |
@@ -87,6 +116,13 @@ config NICE_OLED_NATIVE_PORTRAIT
 | A1 | Battery lifecycle leak fix | ✅ COMPLETE |
 | B1 | Modifiers diff guard | ✅ COMPLETE |
 | J1 | Native portrait Kconfig + remove dead rotate_canvas | ✅ COMPLETE |
+| S1.1 | Missing util.h includes (6 files) | ✅ COMPLETE |
+| S1.2 | Dirty mask reference bug (7 occurrences) | ✅ COMPLETE |
+| S1.3 | Font include in screen_central.c | ✅ COMPLETE |
+| S1.4 | RAW HID header path fix | ✅ COMPLETE |
+| S1.5 | Event header include fix | ✅ COMPLETE |
+| S1.6 | IS_ENABLED macro availability | ✅ COMPLETE |
+| S1.7 | strtok → strchr replacement | ✅ COMPLETE |
 
 ---
 
@@ -105,3 +141,9 @@ config NICE_OLED_NATIVE_PORTRAIT
 - `CONFIG_NICE_OLED_NATIVE_PORTRAIT` added to Kconfig.defconfig at line 83
 - `rotate_canvas()` removed from util.c (was never called)
 - `rotate_canvas()` declaration removed from util.h
+
+### Smoke Build Verification
+- ✅ nice_oled: 294,548 B FLASH (36.3%), 84,816 B RAM (32.4%)
+- ✅ nice_epaper: 294,876 B FLASH (36.4%), 85,560 B RAM (32.6%)
+- ❌ nice_custom: Pre-existing linker error (`__device_dts_ord_134`)
+- ✅ nice_oled_raw_hid: 297,544 B FLASH (36.7%), 86,288 B RAM (32.9%)

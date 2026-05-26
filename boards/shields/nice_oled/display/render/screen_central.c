@@ -9,6 +9,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include "../model/dirty_domains.h"
 #include "screen_common.h"
 #include "../../widgets/util.h"
+#include "../../include/fonts.h"
 #include "../../widgets/battery.h"
 #include "../../widgets/output.h"
 #include "../../widgets/layer.h"

@@ -58,7 +58,7 @@ static void set_battery_status(struct zmk_widget_screen *widget,
         return;
     }
 
-    widget->peripheral.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     widget->compositor.peripheral_state = &widget->peripheral;
     nice_oled_screen_peripheral_redraw(&widget->compositor);
 
@@ -119,7 +119,7 @@ static void set_connection_status(struct zmk_widget_screen *widget,
         return;
     }
 
-    widget->peripheral.dirty |= dirty;
+    widget->compositor.dirty |= dirty;
     widget->compositor.peripheral_state = &widget->peripheral;
     nice_oled_screen_peripheral_redraw(&widget->compositor);
 }
