@@ -219,21 +219,15 @@ Observed:
 - `corne_right nice_oled` peripheral-role build passes at FLASH `31.04%`, RAM `35.04%`
 - reviewer-found split-role linkage regression was fixed by moving `central_draw_compat.c` out of the central-only CMake branch
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
+
+Committed as part of `30e4201` ("first recorery stage").
 
 ```sh
-git add boards/shields/nice_oled/display/render/central_draw_compat.h \
-        boards/shields/nice_oled/display/render/central_draw_compat.c \
-        boards/shields/nice_oled/display/render/screen_central.c \
-        boards/shields/nice_oled/widgets/util.c \
-        boards/shields/nice_oled/widgets/util.h \
-        boards/shields/nice_oled/widgets/battery.c \
-        boards/shields/nice_oled/widgets/output.c \
-        boards/shields/nice_oled/widgets/layer.c \
-        boards/shields/nice_oled/widgets/profile.c \
-        boards/shields/nice_oled/widgets/wpm.c
-git commit -m "feat: make native portrait canonical for central rendering"
+git show --stat 30e4201 | head -5
 ```
+
+Observed: all Task 2 files included in the commit.
 
 **Task 2 outcome:** Native portrait is now a real, verified central rendering path. The compatibility layer currently preserves the existing portrait-oriented coordinates rather than remapping them, which is acceptable for the current layout model and keeps future remaps centralized.
 
@@ -246,18 +240,42 @@ git commit -m "feat: make native portrait canonical for central rendering"
 - Modify: `boards/shields/nice_oled/src/raw_hid/usb_hid.c`
 - Modify: `boards/shields/nice_oled/src/raw_hid/hog.c`
 
-- [ ] **Step 1: Normalize smart battery object ownership**
+- [x] **Step 1: Normalize smart battery object ownership**
 
-Replace the dual-global-object pattern with a single visible owner or a delete-before-create swap:
+`delete_if_present()` implemented in `battery.c:45-52`.
 
-```c
-static void delete_if_present(lv_obj_t **obj) {
-    if (*obj != NULL) {
-        lv_obj_del(*obj);
-        *obj = NULL;
-    }
-}
+- [x] **Step 2: Make on/off transitions mutually exclusive**
+
+Both `animation_smart_battery_on/off()` call `delete_if_present()` on both objects before creating new ones. Delete callbacks registered to null slot. Callers updated in `screen_peripheral.c:69-74`.
+
+- [x] **Step 3: Clamp RAW HID send length on both transports**
+
+`usb_hid.c:53-54` and `hog.c:132-133` now use `MIN(len, CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE)`.
+
+- [x] **Step 4: Run targeted static verification**
+
+```sh
+rg -n "memcpy\(report, data, len\)" boards/shields/nice_oled/src/raw_hid
+# Result: No matches found (expected)
+
+rg -n "delete_if_present|animation_smart_battery_on|animation_smart_battery_off" boards/shields/nice_oled/widgets/battery.c
+# Result: delete_if_present used in both animation functions, callers pass pointer-to-pointer
 ```
+
+Expected: no remaining unclamped `memcpy(report, data, len)` matches. ✅
+
+- [x] **Step 5: Re-run the smoke build**
+
+Smoke builds verified:
+- `corne_left nice_oled`: FLASH `36.46%`, RAM `42.12%` — PASS
+- `corne_right nice_oled`: FLASH `31.04%`, RAM `35.04%` — PASS
+- No warnings from touched files
+
+- [ ] **Step 6: Commit**
+
+(Will be committed together with Task 4, 5, 6 in a single commit after all recovery work is done.)
+
+**Task 3 outcome:** Smart battery animation lifecycle is now safe — on/off transitions are mutually exclusive with proper cleanup. RAW HID transmit is length-safe on both USB and BLE transports.
 
 - [ ] **Step 2: Make on/off transitions mutually exclusive**
 

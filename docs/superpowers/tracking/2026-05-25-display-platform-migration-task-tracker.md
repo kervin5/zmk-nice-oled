@@ -41,12 +41,13 @@
 
 ### Task A: Battery Lifecycle + Layer Canvas Clear
 
-**Status:** `PARTIAL`
+**Status:** `VERIFIED COMPLETE`
 
-- [ ] `A1` Battery smart-animation lifecycle is still not fixed
-  - `widgets/battery.c` still keeps separate `art` and `art2` globals
-  - `animation_smart_battery_on()` and `animation_smart_battery_off()` only guard against duplicate creation of the same object
-  - the opposite object is not deleted or swapped out cleanly
+- [x] `A1` Battery smart-animation lifecycle fixed
+  - `animation_smart_battery_on/off()` now accept `lv_obj_t **anim_obj, lv_obj_t **static_obj` pointers
+  - Both functions call `delete_if_present()` on the opposite object before creating new ones
+  - Delete callbacks registered to null slot when LVGL destroys objects
+  - Callers in `screen_peripheral.c` pass `&widget->smart_battery_anim` / `&widget->smart_battery_static`
 - [x] `A2` Layer redraw no longer clears the whole canvas
   - `widgets/layer.c` uses targeted `lv_canvas_draw_rect()` over the layer region
 
@@ -160,14 +161,24 @@
 - [x] Central battery rendering parity has been restored for the non-split path
 - [x] Peripheral rendering parity has been restored for connection and battery status
 
+### Task 2 (Recovery Plan): Make Native Portrait Canonical
+
+**Status:** `VERIFIED COMPLETE`
+
+- [x] Compatibility draw adapter created (`central_draw_compat.{c,h}`)
+- [x] Central compositor honors `CONFIG_NICE_OLED_NATIVE_PORTRAIT`
+- [x] All central widget draw helpers migrated through compat adapter
+- [x] Smoke builds verified (see Task J verification above)
+- [x] Committed in `30e4201` ("first recorery stage")
+
 ---
 
 ## Additional Gaps Discovered During Reconciliation
 
 These are real code issues not represented clearly enough in the earlier tracker.
 
-- [ ] RAW HID transmit-side safety still needs fixing
-  - `src/raw_hid/usb_hid.c` and `src/raw_hid/hog.c` still `memcpy(..., len)` into fixed-size report buffers without clamping
+- [x] RAW HID transmit-side safety fixed
+  - `src/raw_hid/usb_hid.c` and `src/raw_hid/hog.c` now clamp with `MIN(len, CONFIG_NICE_OLED_WIDGET_RAW_HID_REPORT_SIZE)`
 - [ ] RAW HID labels need layout/theme ownership
   - they should be positioned and styled by layout/theme policy, not by ad hoc widget init
 - [ ] The compositor split exists, but render ownership is still mixed
@@ -202,9 +213,9 @@ These are real code issues not represented clearly enough in the earlier tracker
 
 ## Progress Snapshot
 
-- `Verified complete:` 9 major task areas
-- `Partial:` 2 major task areas
-- `Reopened:` 1 major task area
-- `Additional uncovered gaps:` 4
+- `Verified complete:` 11 major task areas (added Task 2, Task 3/A1 from recovery plan)
+- `Partial:` 1 major task area (RAW HID labels D)
+- `Reopened:` 1 major task area (rotation scratch I)
+- `Additional uncovered gaps:` 3
 
 **Bottom line:** the refactor is real and valuable, but it is not finished. Use this tracker as the source of truth instead of the earlier “12/12 complete” claim.
