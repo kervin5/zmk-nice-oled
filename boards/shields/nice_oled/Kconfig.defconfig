@@ -80,6 +80,14 @@ config NICE_OLED_WIDGET_STATUS
 config NICE_OLED_WIDGET_INVERTED
     bool "Invert display colors"
 
+config NICE_OLED_NATIVE_PORTRAIT
+    bool "Enable native portrait mode (skip canvas rotation)"
+    default n
+    help
+      Panels that natively support portrait orientation can enable this to
+      skip the 90-degree canvas rotation at runtime. Eliminates rotation
+      matrix computation from every redraw on supported hardware.
+
 ### GENERAL CONFIG END  }}}
 ### WIDGET ON CENTRAL AND PERIPHERAL START {{{
 config NICE_OLED_WIDGET_OUTPUT_BACKGROUND

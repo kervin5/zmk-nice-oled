@@ -136,6 +136,11 @@ static lv_obj_t *luna_imgs = NULL; // Variable estática para almacenar el objet
 
 static void set_modifiers_text(lv_obj_t *label, struct modifiers_state ignored) {
     uint8_t mods = zmk_hid_get_explicit_mods();
+    static uint8_t s_prev_mods = 0;
+
+    if (mods == s_prev_mods) return;
+    s_prev_mods = mods;
+
     /* Limpiamos el texto del label, ya que se usarán imágenes fijas */
     lv_label_set_text(label, "");
 

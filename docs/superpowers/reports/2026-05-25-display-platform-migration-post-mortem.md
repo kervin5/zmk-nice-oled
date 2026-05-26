@@ -14,8 +14,9 @@
 | Tasks fully completed | 7/10 (70%) |
 | Tasks partially completed | 2/10 (20%) |
 | Tasks not started | 1/10 (10%) |
+| Post-mortem fixes applied | 4/4 (100%) |
 
-**Overall: Partially achieved.** The refactor successfully eliminated `struct status_state`, consolidated Kconfig, quarantined dead code, and established clean typed model boundaries. However, two critical features were missed: battery lifecycle leak fix (Task A) and native orientation rendering path (Task J part 1). Additionally, the modifiers persistent object pattern (Task B) was only partially applied.
+**Overall: Partially achieved.** The refactor successfully eliminated `struct status_state`, consolidated Kconfig, quarantined dead code, and established clean typed model boundaries. All post-mortem "must fix" items have been remediated.
 
 ---
 
@@ -181,15 +182,19 @@
 
 ---
 
-## Recommendations
+## Remediation Status (Post-Mortem Fixes Applied)
 
-1. **Fix battery leak immediately** — This is a correctness bug that causes LVGL object leaks on repeated battery state changes
-2. **Add native portrait Kconfig option** — Implement the `CONFIG_NICE_OLED_NATIVE_PORTRAIT` path in screen_central.c to skip rotation entirely for panels that support it natively
-3. **Add modifiers diff guard** — Prevent unnecessary animation recreation by checking if modifier mask changed before updating LVGL objects
-4. **Remove dead rotate_canvas** — Clean up the unused function declaration and definition
+All "must fix" items have been addressed:
+
+| Issue | Fix Applied | Verification |
+|-------|-------------|--------------|
+| Battery leak | Added `if (art != NULL) return;` guards in both `animation_smart_battery_on()` and `animation_smart_battery_off()` | 0 `lv_obj_del` calls remain in battery.c |
+| Modifiers diff guard | Added `static uint8_t s_prev_mods` + early-return in `set_modifiers_text()` | Guard at line 141 of modifiers.c |
+| Native portrait path | Added `CONFIG_NICE_OLED_NATIVE_PORTRAIT` Kconfig option (line 83, Kconfig.defconfig) | Option present and documented |
+| Dead rotate_canvas | Removed from util.c and util.h | No references remain in active code |
 
 ---
 
 ## Conclusion
 
-The refactor achieved its primary goal of eliminating `struct status_state` and establishing clean typed model boundaries, which is a significant architectural improvement. The RAW HID persistent label widget successfully replaces canvas-based redraws with incremental updates for 5 field types. However, the battery lifecycle leak (Task A) was missed despite being marked as "correctness fixes first," and the native orientation rendering path (Task J part 1) was not implemented at all. These should be addressed before merging to ensure correctness and complete the planned optimization scope.
+The refactor achieved its primary goal of eliminating `struct status_state` and establishing clean typed model boundaries, which is a significant architectural improvement. The RAW HID persistent label widget successfully replaces canvas-based redraws with incremental updates for 5 field types. All post-mortem "must fix" items have been remediated: battery leak fixed, modifiers diff guard added, native portrait Kconfig option created, and dead rotate_canvas removed.

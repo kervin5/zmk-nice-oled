@@ -36,14 +36,7 @@ static lv_obj_t *art = NULL;
 static lv_obj_t *art2 = NULL;
 
 void animation_smart_battery_on(lv_obj_t *canvas) {
-    if (art) {
-        lv_obj_del(art);
-        art = NULL;
-    }
-    if (art2) {
-        lv_obj_del(art2);
-        art2 = NULL;
-    }
+    if (art != NULL) return;
     art = lv_animimg_create(canvas);
     lv_obj_center(art);
 
@@ -55,14 +48,7 @@ void animation_smart_battery_on(lv_obj_t *canvas) {
 }
 
 void animation_smart_battery_off(lv_obj_t *canvas) {
-    if (art2) {
-        lv_obj_del(art2);
-        art2 = NULL;
-    }
-    if (art) {
-        lv_obj_del(art);
-        art = NULL;
-    }
+    if (art2 != NULL) return;
     art2 = lv_img_create(canvas);
     lv_img_set_src(art2, SET_ANIMATION_SMART_BATTERY_OFF);
     lv_obj_align(art2, LV_ALIGN_TOP_LEFT, CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_X, CONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL_CUSTOM_Y);

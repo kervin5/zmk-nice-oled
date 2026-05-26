@@ -8,25 +8,6 @@ void to_uppercase(char *str) {
   }
 }
 
-void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
-  lv_color_t *cbuf_tmp = lv_mem_alloc(sizeof(lv_color_t) * CANVAS_WIDTH * CANVAS_HEIGHT);
-  if (!cbuf_tmp) return;
-
-  memcpy(cbuf_tmp, cbuf, sizeof(lv_color_t) * CANVAS_WIDTH * CANVAS_HEIGHT);
-
-  lv_img_dsc_t img;
-  img.data = (void *)cbuf_tmp;
-  img.header.cf = LV_IMG_CF_TRUE_COLOR;
-  img.header.w = CANVAS_WIDTH;
-  img.header.h = CANVAS_HEIGHT;
-
-  lv_canvas_fill_bg(canvas, LVGL_BACKGROUND, LV_OPA_COVER);
-  lv_canvas_transform(canvas, &img, 900, LV_IMG_ZOOM_NONE, -1, 0,
-                      CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, false);
-
-  lv_mem_free(cbuf_tmp);
-}
-
 void draw_background(lv_obj_t *canvas) {
   lv_draw_rect_dsc_t rect_black_dsc;
   init_rect_dsc(&rect_black_dsc, LVGL_BACKGROUND);
