@@ -491,17 +491,6 @@ config NICE_OLED_WIDGET_LAYER
     bool "Enable layer widget"
     default y
 # }}}
-### NICE OLED WIDGET LAYER ANIMATION {{{
-config NICE_OLED_WIDGET_LAYER_ANIMATION_MS
-    int "Layer transition animation duration in ms"
-    default 250 if NICE_OLED_ON
-    default 300 if NICE_EPAPER_ON
-    range 100 500
-
-config NICE_OLED_WIDGET_LAYER_COLOR_FLASH
-    bool "Enable background color flash on layer change"
-    default y
-# }}}
 ### NICE OLED WIDGET PROFILE {{{
 config NICE_OLED_WIDGET_PROFILE_BIG
     bool "Enable show widget profile bigger"
